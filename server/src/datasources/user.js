@@ -1,5 +1,5 @@
-const { get } = require('lodash');
 const { DataSource } = require('apollo-datasource');
+const { get } = require('lodash');
 const isEmail = require('isemail');
 
 class UserAPI extends DataSource {
@@ -33,3 +33,5 @@ class UserAPI extends DataSource {
         return get(users, 0);
     }
 }
+
+module.exports = UserAPI;

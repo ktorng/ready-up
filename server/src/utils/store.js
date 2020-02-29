@@ -5,24 +5,98 @@ module.exports = {
         const db = new Sequelize({
             dialect: 'sqlite',
             storage: './store.sqlite',
+            logging: console.log
         });
 
-        const users = db.define('user', {
+        const users = db.define('users', {
+            id: {
+                type: Sequelize.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
             createdAt: Sequelize.DATE,
             updatedAt: Sequelize.DATE,
-            email: Sequelize.STRING,
-            status: Sequelize.STRING,
-            statusMessage: Sequelize.STRING,
-            gameId: Sequelize.INTEGER,
+            email: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            status: {
+                type: Sequelize.STRING,
+                defaultValue: 'waiting'
+            },
+            statusMessage: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                defaultValue: ''
+            },
         });
 
-        const games = db.define('game', {
+        const games = db.define('games', {
+            id: {
+                type: Sequelize.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
             createdAt: Sequelize.DATE,
             updatedAt: Sequelize.DATE,
-            accessCode: Sequelize.STRING,
-            status: Sequelize.STRING,
+            accessCode: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                unique: true
+            },
+            status: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                defaultValue: 'waiting'
+            },
+            size: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                defaultValue: 4
+            },
+            hostId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'users',
+                    key: 'id'
+                }
+            },
+            name: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                defaultValue: ''
+            },
         });
 
-        return { db, users, games };
+        const gameUsers = db.define('game_users', {
+            gameId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'games',
+                    key: 'id'
+                }
+            },
+            userId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'users',
+                    key: 'id'
+                }
+            },
+            isHost: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
+            },
+        });
+
+        users.hasOne(games);
+        users.hasOne(gameUsers);
+        games.hasMany(gameUsers);
+
+        return { db, users, games, gameUsers };
     }
 };

@@ -7,6 +7,7 @@ const resolvers = require('./resolvers');
 const { createStore } = require('./utils/store');
 
 const UserAPI = require('./datasources/user');
+const GameAPI = require('./datasources/game');
 
 // creates a sequelize connection once. NOT for every request
 const store = createStore();
@@ -14,6 +15,7 @@ const store = createStore();
 // set up datasources our resolvers need
 const dataSources = () => ({
     userAPI: new UserAPI({ store }),
+    gameAPI: new GameAPI({ store }),
 });
 
 // function that sets up global context for each resolver, using the request
@@ -42,6 +44,13 @@ const server = new ApolloServer({
     playground: true,
 });
 
-server.listen().then(({ url }) => {
+server.listen().then(async ({ url }) => {
+    try {
+        await store.db.authenticate();
+        console.log('Connection has been established successfully.');
+    } catch (error) {
+        console.error('Unable to connect to the database:', error);
+    }
+
     console.log(`Server ready at ${url}`);
 });
