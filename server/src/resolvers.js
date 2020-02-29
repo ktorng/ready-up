@@ -1,6 +1,10 @@
 const { generateAccessCode } = require('./utils/game');
 
 module.exports = {
+    Query: {
+        games: (_, __, { dataSources }) =>
+            dataSources.gameAPI.getGames()
+    },
     Mutation: {
         login: async (_, { email }, { dataSources }) => {
             const user = await dataSources.userAPI.findOrCreateUser({ email });

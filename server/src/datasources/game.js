@@ -1,5 +1,5 @@
 const { DataSource } = require('apollo-datasource');
-const { get } = require('lodash');
+const { get, pick } = require('lodash');
 
 const { generateAccessCode } = require('../utils/game');
 
@@ -31,7 +31,6 @@ class GameAPI extends DataSource {
                 name,
                 accessCode
             });
-            console.log('game: ', game);
 
             await this.store.gameUsers.create({
                 gameId: get(game, 'dataValues.id'),
@@ -43,6 +42,25 @@ class GameAPI extends DataSource {
         } catch (e) {
             console.error(e);
         }
+    }
+
+    async getGames(where = { visibility: 'public' }) {
+        const games = await this.store.games.findAll({
+            where
+        });
+
+        return games.map(this.gameReducer);
+    }
+
+    gameReducer(game) {
+        return pick(game, [
+            'id',
+            'hostId',
+            'accessCode',
+            'name',
+            'status',
+            'size',
+        ]);
     }
 }
 

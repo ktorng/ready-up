@@ -44,6 +44,11 @@ module.exports = {
                 allowNull: false,
                 unique: true
             },
+            visibility: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                defaultValue: 'public'
+            },
             status: {
                 type: Sequelize.STRING,
                 allowNull: false,

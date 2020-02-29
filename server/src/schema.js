@@ -3,10 +3,11 @@ const { gql } = require('apollo-server');
 const typeDefs = gql`
     type Game {
         id: ID!
-        host: [User]!
+        hostId: String!
         accessCode: String!
-        status: GameStatus
-        size: Int
+        status: GameStatus!
+        name: String!
+        size: Int!
     }
 
     type User {
@@ -17,7 +18,8 @@ const typeDefs = gql`
     }
 
     type Query {
-        usersByGame(gameId: ID!): [User]
+        games: [Game]!
+        usersByGame(gameId: ID!): [User]!
         gameByAccessCode(accessCode: String!): Game
         me: User
     }
@@ -48,6 +50,11 @@ const typeDefs = gql`
         COMPLETED
     }
 
+    enum GameVisibility {
+        PUBLIC
+        PRIVATE
+    }
+    
     enum UserStatus {
         WAITING
         READY
