@@ -18,20 +18,23 @@ class GameAPI extends DataSource {
         this.context = config.context;
     }
 
-    async createGame({ userId, size, name }) {
-        const accessCode = generateAccessCode();
+    async createGame({ size, name }) {
+        const userId = get(this.context, 'user.id');
+
+        if (!userId) return;
 
         try {
-            const games = await this.store.games.create({
-                userId,
+            const accessCode = generateAccessCode();
+            const game = await this.store.games.create({
+                hostId: userId,
                 size,
                 name,
                 accessCode
             });
-            const game = get(games, 0);
+            console.log('game: ', game);
 
             await this.store.gameUsers.create({
-                gameId: get(game, 'id'),
+                gameId: get(game, 'dataValues.id'),
                 userId,
                 isHost: true
             });
@@ -39,7 +42,6 @@ class GameAPI extends DataSource {
             return game;
         } catch (e) {
             console.error(e);
-            return null;
         }
     }
 }

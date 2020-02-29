@@ -32,7 +32,7 @@ const context = async ({ req }) => {
     const users = await store.users.findOrCreate({ where: { email }});
     const user = get(users, 0);
 
-    return { user };
+    return { user: { ...user.dataValues } };
 };
 
 const server = new ApolloServer({

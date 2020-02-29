@@ -23,11 +23,7 @@ const typeDefs = gql`
     }
 
     type Mutation {
-        createGame(
-            userId: ID!, 
-            size: Int!,
-            name: String!
-        ): GameUpdateResponse!
+        createGame(size: Int!, name: String!): GameUpdateResponse!
         updateGame(gameId: ID!, status: GameStatus): GameUpdateResponse!
         deleteGame(gameId: ID!): GameUpdateResponse!
         updateUser(userId: ID!, status: UserStatus, gameId: ID): UserUpdateResponse!
