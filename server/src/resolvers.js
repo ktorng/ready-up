@@ -58,9 +58,18 @@ module.exports = {
 
             return {
                 success: !!game,
-                message: game ? 'Successfully updated game': `Failed to update game with gameId: ${gameId}`,
                 game
             };
+        },
+        deleteGame: async (_, { gameId }, { dataSources }) => {
+            // delete gameUsers first, then delete the game
+            await dataSources.gameAPI.deleteGameUsers({ gameId });
+            const deletedGame = await dataSources.gameAPI.deleteGame({ id: gameId });
+
+            // TODO: handle partial failure
+            return {
+                success: deletedGame
+            }
         }
     }
 };

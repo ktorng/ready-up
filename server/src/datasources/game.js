@@ -90,6 +90,24 @@ class GameAPI extends DataSource {
         }
     }
 
+    /**
+     * Deletes gameUser records for a given options query
+     */
+    async deleteGameUsers(options) {
+        const deleted = await this.store.gameUsers.destroy({ where: options });
+
+        return !!deleted[0];
+    }
+
+    /**
+     * Deletes game records for a given options query
+     */
+    async deleteGame(options) {
+        const deleted = await this.store.games.destroy({ where: options });
+
+        return !!deleted[0];
+    }
+
     gameReducer(game) {
         return pick(game, [
             'id',
