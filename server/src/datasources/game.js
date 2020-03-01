@@ -44,12 +44,50 @@ class GameAPI extends DataSource {
         }
     }
 
-    async getGames(where = { visibility: 'public' }) {
+    async getGames(options = { visibility: 'public' }) {
         const games = await this.store.games.findAll({
-            where
+            where: options
         });
 
         return games.map(this.gameReducer);
+    }
+
+    /**
+     * Gets a game record given query options
+     */
+    async getGame(options) {
+        return this.gameReducer(await this.store.games.findOne({
+            where: options
+        }));
+    }
+
+    /**
+     * Gets current users in given gameId
+     */
+    getGameUsers({ gameId }) {
+        return this.store.gameUsers.findAll({ where: { gameId } });
+    }
+
+    /**
+     * Creates a join record for gameId and current userId
+     */
+    joinGame({ gameId }) {
+        const userId = get(this.context, 'user.id');
+
+        if (!userId) return;
+
+        return this.store.gameUsers.create({ gameId, userId });
+    }
+
+    /**
+     * Updates a game record's values queried by options
+     */
+    async updateGame(values, options) {
+        const updated = await this.store.games.update(values, { where: options});
+
+        if (updated[0]) {
+            return this.store.games.findOne({ where: options });
+        }
     }
 
     gameReducer(game) {
