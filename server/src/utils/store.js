@@ -22,7 +22,7 @@ module.exports = {
             },
             status: {
                 type: Sequelize.STRING,
-                defaultValue: 'waiting'
+                defaultValue: 'WAITING'
             },
             statusMessage: {
                 type: Sequelize.STRING,
@@ -47,12 +47,12 @@ module.exports = {
             visibility: {
                 type: Sequelize.STRING,
                 allowNull: false,
-                defaultValue: 'public'
+                defaultValue: 'PUBLIC'
             },
             status: {
                 type: Sequelize.STRING,
                 allowNull: false,
-                defaultValue: 'waiting'
+                defaultValue: 'WAITING'
             },
             size: {
                 type: Sequelize.INTEGER,

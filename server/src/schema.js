@@ -8,19 +8,19 @@ const typeDefs = gql`
         status: GameStatus!
         name: String!
         size: Int!
+        users: [User]
     }
 
     type User {
         id: ID!
         email: String!
-        game: Game
-        userStatus: UserStatus
+        status: UserStatus!
+        statusMessage: String!
     }
 
     type Query {
         games: [Game]!
-        usersByGame(gameId: ID!): [User]!
-        gameByAccessCode(accessCode: String!): Game
+        game(accessCode: String!): Game
         me: User
     }
 
@@ -29,7 +29,7 @@ const typeDefs = gql`
         joinGame(accessCode: String!): GameUpdateResponse!
         updateGame(gameId: ID!, status: GameStatus): GameUpdateResponse!
         deleteGame(gameId: ID!): GameUpdateResponse!
-        updateUser(userId: ID!, status: UserStatus, gameId: ID): UserUpdateResponse!
+        updateUser(userId: ID!, status: UserStatus, statusMessage: String): UserUpdateResponse!
         login(email: String): String # login token
     }
 

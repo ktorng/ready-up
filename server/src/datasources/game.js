@@ -44,7 +44,7 @@ class GameAPI extends DataSource {
         }
     }
 
-    async getGames(options = { visibility: 'public' }) {
+    async getGames(options = { visibility: 'PUBLIC' }) {
         const games = await this.store.games.findAll({
             where: options
         });

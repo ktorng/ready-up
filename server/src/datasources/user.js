@@ -1,5 +1,6 @@
 const { DataSource } = require('apollo-datasource');
-const { get } = require('lodash');
+const { get, pick } = require('lodash');
+const { Sequelize } = require('sequelize');
 const isEmail = require('isemail');
 
 class UserAPI extends DataSource {
@@ -31,6 +32,38 @@ class UserAPI extends DataSource {
         const users = await this.store.users.findOrCreate({ where: { email }});
 
         return get(users, 0);
+    }
+
+    /**
+     * Gets user records queried by list of userIds
+     */
+    async getUsers(userIds) {
+        const { in: opIn } = Sequelize.Op;
+        const users = await this.store.users.findAll({
+            where: { id: { [opIn] : userIds } }
+        });
+
+        return users.map(this.userReducer);
+    }
+
+    /**
+     * Updates a user record and then returns the updated record
+     */
+    async updateUser(values, options) {
+        const updated = this.store.users.update(values, { where: options });
+
+        if (updated[0]) {
+            return this.store.users.findOne({ where: options });
+        }
+    }
+
+    userReducer(user) {
+        return pick(user, [
+            'id',
+            'email',
+            'status',
+            'statusMessage'
+        ]);
     }
 }
 

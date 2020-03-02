@@ -3,7 +3,20 @@ const { generateAccessCode } = require('./utils/game');
 module.exports = {
     Query: {
         games: (_, __, { dataSources }) =>
-            dataSources.gameAPI.getGames()
+            dataSources.gameAPI.getGames(),
+        game: async (_, { accessCode }, { dataSources }) => {
+            const game = await dataSources.gameAPI.getGame({ accessCode });
+
+            if (!game) return;
+
+            const gameUsers = await dataSources.gameAPI.getGameUsers({ gameId: game.id });
+            const users = await dataSources.userAPI.getUsers(gameUsers.map(gameUser => gameUser.userId));
+
+            return {
+                ...game,
+                users
+            }
+        }
     },
     Mutation: {
         login: async (_, { email }, { dataSources }) => {
@@ -70,6 +83,17 @@ module.exports = {
             return {
                 success: deletedGame
             }
+        },
+        updateUser: async (_, { userId, ...values }, { ...dataSources }) => {
+            const user = await dataSources.userAPI.updateUser(
+                values,
+                { userId }
+            );
+
+            return {
+                success: !!user,
+                user
+            };
         }
     }
 };
