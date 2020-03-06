@@ -1,20 +1,19 @@
 import React from 'react';
 import T from 'prop-types';
-import isEmail from 'isemail';
 import { Formik, Form, Field } from 'formik';
 import { Button, LinearProgress } from '@material-ui/core';
 import { TextField } from 'formik-material-ui';
 
 import useStyles from '../common/useStyles';
 
-const LoginForm = ({ login }) => {
+const CreateForm = ({ createGame }) => {
     const classes = useStyles();
 
     return (
         <Formik
             initialValues={{
                 name: '',
-                email: ''
+                size: 4
             }}
             validate={values => {
                 const errors = {};
@@ -22,35 +21,37 @@ const LoginForm = ({ login }) => {
                 if (!values.name) {
                     errors.name = 'Required';
                 }
-                if (!values.email) {
-                    errors.email = 'Required';
-                } else if (!isEmail.validate(values.email)) {
-                    errors.email = 'Invalid email address';
+                if (!values.size) {
+                    errors.size = 'Required';
+                }
+                if (!values.description) {
+                    errors.description = 'Required';
                 }
 
                 return errors;
             }}
             onSubmit={async (values, {setSubmitting}) => {
-                await login({variables: values});
+                await createGame({variables: values});
                 setSubmitting(false);
             }}
         >
             {({submitForm, isSubmitting}) => (
                 <Form className={classes.containerCenter}>
-                    <h1>Ready Up </h1>
+                    <h1>Create Game</h1>
                     <Field
                         component={TextField}
                         className={classes.textField}
                         name="name"
                         type="text"
-                        label="Display Name"
+                        label="Game Name"
                     />
                     <Field
                         component={TextField}
                         className={classes.textField}
-                        name="email"
-                        type="email"
-                        label="Email"
+                        name="description"
+                        placeholder="Where? When?"
+                        type="text"
+                        label="Description"
                     />
                     {isSubmitting && <LinearProgress/>}
                     <Button
@@ -60,7 +61,7 @@ const LoginForm = ({ login }) => {
                         disabled={isSubmitting}
                         onClick={submitForm}
                     >
-                        Login
+                        Create
                     </Button>
                 </Form>
             )}
@@ -68,8 +69,8 @@ const LoginForm = ({ login }) => {
     );
 };
 
-LoginForm.propTypes = {
-    login: T.func.isRequired,
+CreateForm.propTypes = {
+    createGame: T.func.isRequired,
 };
 
-export default LoginForm;
+export default CreateForm;

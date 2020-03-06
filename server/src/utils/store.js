@@ -72,6 +72,11 @@ module.exports = {
                 allowNull: false,
                 defaultValue: ''
             },
+            description: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                defaultValue: ''
+            },
         });
 
         const gameUsers = db.define('game_users', {

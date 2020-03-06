@@ -18,7 +18,7 @@ class GameAPI extends DataSource {
         this.context = config.context;
     }
 
-    async createGame({ size, name }) {
+    async createGame({ size, name, description }) {
         const userId = get(this.context, 'user.id');
 
         if (!userId) return;
@@ -29,6 +29,7 @@ class GameAPI extends DataSource {
                 hostId: userId,
                 size,
                 name,
+                description,
                 accessCode
             });
 
@@ -116,6 +117,7 @@ class GameAPI extends DataSource {
             'name',
             'status',
             'size',
+            'description',
         ]);
     }
 }

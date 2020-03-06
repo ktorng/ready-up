@@ -7,6 +7,7 @@ const typeDefs = gql`
         accessCode: String!
         status: GameStatus!
         name: String!
+        description: String!
         size: Int!
         users: [User]
     }

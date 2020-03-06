@@ -6,6 +6,7 @@ import { Router } from '@reach/router';
 
 import Login from './Login';
 import Games from './Games';
+import Create from './Create';
 
 import './App.scss';
 
@@ -16,7 +17,6 @@ const IS_LOGGED_IN = gql`
 `;
 
 // TODO
-const Create = () => <div>Create</div>;
 const Join = () => <div>Join</div>;
 
 function App() {

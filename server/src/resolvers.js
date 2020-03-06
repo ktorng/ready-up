@@ -26,8 +26,8 @@ module.exports = {
                 return new Buffer(email).toString('base64');
             }
         },
-        createGame: async (_, { name, size }, { dataSources }) => {
-            const game = await dataSources.gameAPI.createGame({ size, name });
+        createGame: async (_, { name, size, description }, { dataSources }) => {
+            const game = await dataSources.gameAPI.createGame({ size, name, description });
 
             return {
                 success: !!game,
