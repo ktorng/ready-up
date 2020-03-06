@@ -1,9 +1,12 @@
 import React from 'react';
 import { useApolloClient, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
+import { Container } from '@material-ui/core';
 
 import LoginForm from './LoginForm';
 import { Loading } from '../common';
+
+import './Login.scss';
 
 export const LOGIN_USER = gql`
     mutation login($email: String!) {
@@ -25,7 +28,9 @@ const Login = () => {
     if (error) return <p>An error occurred.</p>;
 
     return (
-        <LoginForm login={login}/>
+        <Container maxWidth="sm">
+            <LoginForm login={login}/>
+        </Container>
     );
 };
 
