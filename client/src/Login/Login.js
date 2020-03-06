@@ -1,7 +1,6 @@
 import React from 'react';
 import { useApolloClient, useMutation } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
-import { Container } from '@material-ui/core';
 
 import LoginForm from './LoginForm';
 import { Loading } from '../common';
@@ -27,11 +26,7 @@ const Login = () => {
     if (loading) return <Loading />;
     if (error) return <p>An error occurred.</p>;
 
-    return (
-        <Container maxWidth="sm">
-            <LoginForm login={login}/>
-        </Container>
-    );
+    return <LoginForm login={login}/>;
 };
 
 export default Login;
