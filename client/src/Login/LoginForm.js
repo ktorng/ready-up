@@ -2,23 +2,10 @@ import React from 'react';
 import T from 'prop-types';
 import isEmail from 'isemail';
 import { Formik, Form, Field } from 'formik';
-import {Button, LinearProgress} from '@material-ui/core';
+import { Button, LinearProgress } from '@material-ui/core';
 import { TextField } from 'formik-material-ui';
-import { makeStyles } from '@material-ui/core/styles';
 
-const useStyles = makeStyles(_ => ({
-    textField: {
-        display: 'block',
-    },
-    button: {
-        marginTop: 16,
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-    },
-}));
+import useStyles from '../common/useStyles';
 
 const LoginForm = ({ login }) => {
     const classes = useStyles();
@@ -49,7 +36,7 @@ const LoginForm = ({ login }) => {
             }}
         >
             {({submitForm, isSubmitting}) => (
-                <Form className={classes.form}>
+                <Form className={classes.containerCenter}>
                     <h1>Ready Up </h1>
                     <Field
                         component={TextField}

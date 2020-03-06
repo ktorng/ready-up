@@ -5,8 +5,6 @@ import { gql } from 'apollo-boost';
 import LoginForm from './LoginForm';
 import { Loading } from '../common';
 
-import './Login.scss';
-
 export const LOGIN_USER = gql`
     mutation login($email: String!) {
         login(email: $email)

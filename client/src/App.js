@@ -2,9 +2,10 @@ import React from 'react';
 import { gql } from 'apollo-boost';
 import { useQuery } from '@apollo/react-hooks';
 import { Container } from '@material-ui/core';
-import { Router, Link } from '@reach/router';
+import { Router } from '@reach/router';
 
 import Login from './Login';
+import Games from './Games';
 
 import './App.scss';
 
@@ -15,7 +16,6 @@ const IS_LOGGED_IN = gql`
 `;
 
 // TODO
-const Games = () => <div>Games</div>;
 const Create = () => <div>Create</div>;
 const Join = () => <div>Join</div>;
 
