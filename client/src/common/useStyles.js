@@ -19,6 +19,13 @@ const useStyles = makeStyles(_ => ({
         textDecoration: 'none',
         color: 'white',
     },
+    sliderWrapper: {
+        marginTop: 16,
+        color: '#575757',
+    },
+    slider: {
+        width: 200,
+    },
 }));
 
 export default useStyles;

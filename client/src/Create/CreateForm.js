@@ -1,9 +1,10 @@
 import React from 'react';
 import T from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { Button, LinearProgress } from '@material-ui/core';
+import { Button, LinearProgress, Typography } from '@material-ui/core';
 import { TextField } from 'formik-material-ui';
 
+import Slider from '../common/Form/Slider';
 import useStyles from '../common/useStyles';
 
 const CreateForm = ({ createGame }) => {
@@ -13,6 +14,7 @@ const CreateForm = ({ createGame }) => {
         <Formik
             initialValues={{
                 name: '',
+                description: '',
                 size: 4
             }}
             validate={values => {
@@ -31,7 +33,7 @@ const CreateForm = ({ createGame }) => {
                 return errors;
             }}
             onSubmit={async (values, {setSubmitting}) => {
-                await createGame({variables: values});
+                await createGame({ variables: values });
                 setSubmitting(false);
             }}
         >
@@ -43,7 +45,7 @@ const CreateForm = ({ createGame }) => {
                         className={classes.textField}
                         name="name"
                         type="text"
-                        label="Game Name"
+                        label="Game name"
                     />
                     <Field
                         component={TextField}
@@ -53,6 +55,28 @@ const CreateForm = ({ createGame }) => {
                         type="text"
                         label="Description"
                     />
+                    <Field name="size" placeholder="Number of players">
+                        {({ field, form }) => (
+                            <div className={classes.sliderWrapper}>
+                                <Typography id="size-slider" gutterBottom>
+                                    Number of players: {field.value}
+                                </Typography>
+                                <Slider
+                                    field={field}
+                                    form={form}
+                                    className={classes.slider}
+                                    defaultValue={4}
+                                    getAriaValueText={value => `${value} players`}
+                                    aria-labelledby="size-slider"
+                                    valueLabelDisplay="auto"
+                                    step={1}
+                                    marks
+                                    min={2}
+                                    max={10}
+                                />
+                            </div>
+                        )}
+                    </Field>
                     {isSubmitting && <LinearProgress/>}
                     <Button
                         className={classes.button}
