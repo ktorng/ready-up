@@ -4,6 +4,7 @@ import ApolloClient, { gql } from 'apollo-boost';
 import { ApolloProvider } from '@apollo/react-hooks';
 
 import App from './App';
+import { resolvers, typeDefs } from './resolvers';
 import * as serviceWorker from './serviceWorker';
 
 import './index.css';
@@ -18,6 +19,8 @@ const client = new ApolloClient({
             },
         });
     },
+    typeDefs,
+    resolvers,
     clientState: {
         defaults: {
             isLoggedIn: !!localStorage.getItem('readyup-token'),
