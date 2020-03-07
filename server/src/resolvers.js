@@ -1,5 +1,3 @@
-const { generateAccessCode } = require('./utils/game');
-
 module.exports = {
     Query: {
         games: (_, __, { dataSources }) =>
@@ -22,7 +20,6 @@ module.exports = {
     Mutation: {
         login: async (_, { name, email }, { dataSources }) => {
             const user = await dataSources.userAPI.upsertUser({ name, email });
-            console.log(user)
 
             if (user) {
                 return new Buffer(email).toString('base64');
@@ -86,10 +83,10 @@ module.exports = {
                 success: deletedGame
             }
         },
-        updateUser: async (_, { userId, ...values }, { ...dataSources }) => {
+        updateUser: async (_, { userId, ...values }, { dataSources }) => {
             const user = await dataSources.userAPI.updateUser(
                 values,
-                { userId }
+                { id: userId }
             );
 
             return {

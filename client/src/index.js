@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ApolloClient, { gql } from 'apollo-boost';
+import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from '@apollo/react-hooks';
 
 import App from './App';
@@ -24,23 +24,10 @@ const client = new ApolloClient({
     clientState: {
         defaults: {
             isLoggedIn: !!localStorage.getItem('readyup-token'),
+            me: null
         },
     },
 });
-
-client
-    .query({
-        query: gql`
-            query me {
-                me {
-                    id
-                    name
-                    email
-                }
-            }
-        `
-    })
-    .then(res => console.log(res));
 
 ReactDOM.render(
     <ApolloProvider client={client}>

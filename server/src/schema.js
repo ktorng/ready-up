@@ -34,7 +34,7 @@ const typeDefs = gql`
         updateUser(userId: ID!, status: UserStatus, statusMessage: String): UserUpdateResponse!
         login(name: String, email: String!): String # login token
     }
-
+    
     type GameUpdateResponse {
         success: Boolean!
         message: String

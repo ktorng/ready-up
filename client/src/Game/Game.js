@@ -29,7 +29,7 @@ const Game = () => {
     console.log(data);
 
     return (
-        <Lobby />
+        <Lobby game={data.game} />
     );
 };
 

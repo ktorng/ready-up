@@ -50,7 +50,7 @@ class UserAPI extends DataSource {
      * Updates a user record and then returns the updated record
      */
     async updateUser(values, options) {
-        const updated = this.store.users.update(values, { where: options });
+        const updated = await this.store.users.update(values, { where: options });
 
         if (updated[0]) {
             return this.store.users.findOne({ where: options });
@@ -61,6 +61,7 @@ class UserAPI extends DataSource {
         return pick(user, [
             'id',
             'email',
+            'name',
             'status',
             'statusMessage'
         ]);

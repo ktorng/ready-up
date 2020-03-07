@@ -4,6 +4,7 @@ export const USER_DATA = gql`
     fragment UserData on User {
         id
         email
+        name
         status
         statusMessage
     }
