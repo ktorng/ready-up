@@ -22,16 +22,16 @@ class UserAPI extends DataSource {
      * User can be called with an argument that includes email, but it doesn't have to be. If the user is already on the
      * context, it will use that user instead.
      */
-    async findOrCreateUser({ email: emailArg } = {}) {
+    async upsertUser({ name, email: emailArg } = {}) {
         const email = get(this.context, ['user', 'email']) || emailArg;
 
         if (!email || !isEmail.validate(email)) {
             return null;
         }
 
-        const users = await this.store.users.findOrCreate({ where: { email }});
+        await this.store.users.upsert({ name, email }, { returning: true });
 
-        return get(users, 0);
+        return this.store.users.findOne({ where: { email } })
     }
 
     /**

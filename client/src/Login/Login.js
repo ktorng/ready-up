@@ -6,8 +6,8 @@ import LoginForm from './LoginForm';
 import { Loading } from '../common';
 
 export const LOGIN_USER = gql`
-    mutation login($email: String!) {
-        login(email: $email)
+    mutation login($name: String!, $email: String!) {
+        login(name: $name, email: $email)
     }
 `;
 

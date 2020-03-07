@@ -18,6 +18,7 @@ const IS_LOGGED_IN = gql`
 
 // TODO
 const Join = () => <div>Join</div>;
+const Game = () => <div>Game</div>;
 
 function App() {
   const { data } = useQuery(IS_LOGGED_IN);
@@ -31,6 +32,7 @@ function App() {
                   <Games path="/" />
                   <Create path="/create" />
                   <Join path="/join" />
+                  <Game path="/game/:accessCode" />
               </Router>
           )}
       </Container>

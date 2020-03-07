@@ -34,6 +34,8 @@ client
             query me {
                 me {
                     id
+                    name
+                    email
                 }
             }
         `

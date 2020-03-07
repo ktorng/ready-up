@@ -16,11 +16,13 @@ module.exports = {
                 ...game,
                 users
             }
-        }
+        },
+        me: (_, __, { user }) => user
     },
     Mutation: {
-        login: async (_, { email }, { dataSources }) => {
-            const user = await dataSources.userAPI.findOrCreateUser({ email });
+        login: async (_, { name, email }, { dataSources }) => {
+            const user = await dataSources.userAPI.upsertUser({ name, email });
+            console.log(user)
 
             if (user) {
                 return new Buffer(email).toString('base64');

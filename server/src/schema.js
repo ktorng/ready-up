@@ -14,6 +14,7 @@ const typeDefs = gql`
 
     type User {
         id: ID!
+        name: String!
         email: String!
         status: UserStatus!
         statusMessage: String!
@@ -26,12 +27,12 @@ const typeDefs = gql`
     }
 
     type Mutation {
-        createGame(size: Int!, name: String!): GameUpdateResponse!
+        createGame(size: Int!, description: String!, name: String!): GameUpdateResponse!
         joinGame(accessCode: String!): GameUpdateResponse!
         updateGame(gameId: ID!, status: GameStatus): GameUpdateResponse!
         deleteGame(gameId: ID!): GameUpdateResponse!
         updateUser(userId: ID!, status: UserStatus, statusMessage: String): UserUpdateResponse!
-        login(email: String): String # login token
+        login(name: String, email: String!): String # login token
     }
 
     type GameUpdateResponse {

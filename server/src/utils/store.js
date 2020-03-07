@@ -16,9 +16,15 @@ module.exports = {
             },
             createdAt: Sequelize.DATE,
             updatedAt: Sequelize.DATE,
+            name: {
+                type: Sequelize.STRING,
+                allowNull: false,
+                defaultValue: '',
+            },
             email: {
                 type: Sequelize.STRING,
                 allowNull: false,
+                unique: true,
             },
             status: {
                 type: Sequelize.STRING,
