@@ -32,7 +32,7 @@ const CreateForm = ({ createGame, loading }) => {
 
                 return errors;
             }}
-            onSubmit={async (values, {setSubmitting}) => {
+            onSubmit={async (values, { setSubmitting }) => {
                 await createGame({ variables: values });
                 setSubmitting(false);
             }}

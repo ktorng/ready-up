@@ -30,8 +30,8 @@ const LoginForm = ({ login }) => {
 
                 return errors;
             }}
-            onSubmit={async (values, {setSubmitting}) => {
-                await login({variables: values});
+            onSubmit={async (values, { setSubmitting }) => {
+                await login({ variables: values });
                 setSubmitting(false);
             }}
         >

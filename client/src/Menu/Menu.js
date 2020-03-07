@@ -4,7 +4,7 @@ import { Button } from '@material-ui/core';
 
 import useStyles from '../common/useStyles';
 
-const Games = () => {
+const Menu = () => {
     const classes = useStyles();
 
     // TODO: Split into GamesList and GamesActions components
@@ -35,4 +35,4 @@ const Games = () => {
     );
 };
 
-export default Games;
+export default Menu;

@@ -5,8 +5,9 @@ import { Container } from '@material-ui/core';
 import { Router } from '@reach/router';
 
 import Login from './Login';
-import Games from './Games';
+import Menu from './Menu';
 import Create from './Create';
+import Game from './Game';
 
 import './App.scss';
 
@@ -18,7 +19,6 @@ const IS_LOGGED_IN = gql`
 
 // TODO
 const Join = () => <div>Join</div>;
-const Game = () => <div>Game</div>;
 
 function App() {
   const { data } = useQuery(IS_LOGGED_IN);
@@ -29,7 +29,7 @@ function App() {
               <Login />
           ) : (
               <Router>
-                  <Games path="/" />
+                  <Menu path="/" />
                   <Create path="/create" />
                   <Join path="/join" />
                   <Game path="/game/:accessCode" />
