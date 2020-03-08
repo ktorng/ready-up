@@ -12,7 +12,7 @@ import Game from './Game';
 import './App.scss';
 
 const IS_LOGGED_IN = gql`
-  query IsUserLoggedIn {
+  query isLoggedIn {
     isLoggedIn @client
   }
 `;

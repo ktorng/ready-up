@@ -1,7 +1,7 @@
 import React from 'react';
 import T from 'prop-types';
 import classNames from 'classnames';
-import { useApolloClient } from '@apollo/react-hooks';
+import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
 import Player, { useStyles as playerStyles } from './Player';
@@ -10,7 +10,7 @@ import useStyles from '../common/useStyles';
 
 const GET_CURRENT_USER = gql`
     query me {
-        me {
+        me @client {
             ...UserData
         }
     }
@@ -20,8 +20,7 @@ const GET_CURRENT_USER = gql`
 const Lobby = ({ game }) => {
     const classes = useStyles();
     const playerClasses = playerStyles();
-    const client = useApolloClient();
-    const data = client.readQuery({ query: GET_CURRENT_USER });
+    const { data } = useQuery(GET_CURRENT_USER);
 
     return (
         <div className={classes.containerCenter}>
@@ -35,8 +34,10 @@ const Lobby = ({ game }) => {
             {game.users.map(user =>
                 <Player key={user.email} user={user} current={data.me} />
             )}
-            {Array(game.size - game.users.length).fill(0).map(() =>
-                <div className={classNames(playerClasses.player, playerClasses.empty)}>(open)</div>
+            {Array(game.size - game.users.length).fill(0).map((_, i) =>
+                <div key={`open-slot-${i+1}`} className={classNames(playerClasses.player, playerClasses.empty)}>
+                    (open)
+                </div>
             )}
         </div>
     );
