@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMutation } from '@apollo/react-hooks';
-import { gql } from 'apollo-boost';
+import gql from 'graphql-tag';
 import { useNavigate } from '@reach/router';
 
 import CreateForm from './CreateForm';

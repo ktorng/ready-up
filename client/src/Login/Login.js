@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApolloClient, useMutation } from '@apollo/react-hooks';
-import { gql } from 'apollo-boost';
+import gql from 'graphql-tag';
 
 import LoginForm from './LoginForm';
 import { Loading } from '../common';

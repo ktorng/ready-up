@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
-import { gql } from 'apollo-boost';
+import gql from 'graphql-tag';
 import { Link } from '@reach/router';
 import { Button } from '@material-ui/core';
 
 import useStyles from '../common/useStyles';
 import { USER_DATA } from '../common/schema';
-import {useQuery} from '@apollo/react-hooks';
+import { useQuery } from '@apollo/react-hooks';
 
 const GET_CURRENT_USER = gql`
     query me {

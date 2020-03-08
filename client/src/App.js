@@ -1,5 +1,5 @@
 import React from 'react';
-import { gql } from 'apollo-boost';
+import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 import { Container } from '@material-ui/core';
 import { Router } from '@reach/router';
