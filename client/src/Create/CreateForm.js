@@ -37,10 +37,10 @@ const CreateForm = ({ createGame, loading }) => {
                 setSubmitting(false);
             }}
         >
-            {({submitForm, isSubmitting}) => (
+            {({ submitForm, isSubmitting }) => (
                 <Form className={classes.containerCenter}>
                     <h1>Create Game</h1>
-                    <fieldset disabled={loading} style={{ border: 'none' }}>
+                    <fieldset className={classes.noBorder} disabled={loading}>
                         <Field
                             component={TextField}
                             className={classes.textField}
@@ -78,7 +78,7 @@ const CreateForm = ({ createGame, loading }) => {
                                 </div>
                             )}
                         </Field>
-                        {isSubmitting && <LinearProgress/>}
+                        {isSubmitting && <LinearProgress />}
                     </fieldset>
                     <Button
                         className={classes.button}

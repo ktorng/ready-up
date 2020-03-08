@@ -19,7 +19,8 @@ const GET_GAME = gql`
 const Game = () => {
     const { accessCode } = useParams();
     const { data, loading, error } = useQuery(GET_GAME, {
-        variables: { accessCode }
+        variables: { accessCode },
+        fetchPolicy: 'network-only',
     });
 
     if (loading) return <Loading />;

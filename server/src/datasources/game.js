@@ -77,7 +77,7 @@ class GameAPI extends DataSource {
 
         if (!userId) return;
 
-        return this.store.gameUsers.create({ gameId, userId });
+        return this.store.gameUsers.findOrCreate({ where: { gameId, userId } });
     }
 
     /**

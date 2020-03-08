@@ -47,19 +47,19 @@ const UPDATE_USER = gql`
     }
 `;
 
-const ReadyIcon = ({ user, updateUser }) => {
+const ReadyIcon = ({ isCurrent, user, updateUser }) => {
     const [ready, setReady] = useState(user.status === 'READY');
 
     const updateStatus = () => {
         setReady(!ready);
         updateUser({ variables: {
             userId: user.id,
-            status: ready ? 'READY' : 'WAITING'
+            status: ready ? 'WAITING' : 'READY'
         }});
     };
 
     return (
-        <div onClick={updateStatus}>
+        <div {...(isCurrent && { onClick: updateStatus })}>
             {ready ? (
                 <CheckBoxRoundedIcon />
             ) : (
@@ -81,7 +81,11 @@ const Player = ({ user, current }) => {
                 {user.name}
             </div>
             <div className={classes.ready}>
-                {isCurrent && <ReadyIcon user={user} updateUser={debounce(updateUser, 300)} />}
+                <ReadyIcon
+                    isCurrent={isCurrent}
+                    user={user}
+                    updateUser={debounce(updateUser, 300)}
+                />
             </div>
             <div className={classes.note}>
                 {user.statusMessage}

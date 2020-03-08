@@ -1,3 +1,5 @@
+const { isEmpty } = require('lodash');
+
 module.exports = {
     Query: {
         games: (_, __, { dataSources }) =>
@@ -34,11 +36,11 @@ module.exports = {
                 game
             };
         },
-        joinGame: async (_, { accessCode }, { dataSources }) => {
+        joinGame: async (_, { accessCode }, { dataSources, user }) => {
             const game = await dataSources.gameAPI.getGame({ accessCode });
 
             // did not find game
-            if (!game) {
+            if (isEmpty(game)) {
                 return {
                     success: false,
                     message: `Failed to find game with access code: ${accessCode}`,
@@ -48,13 +50,17 @@ module.exports = {
 
             const gameUsers = await dataSources.gameAPI.getGameUsers({ gameId: game.id });
 
-            if (gameUsers.length === game.size) {
+            // if full and user is not currently in this game
+            if (gameUsers.length === game.size &&
+                gameUsers.findIndex(gu => gu.userId === user.id) === -1) {
                 return {
                     success: false,
                     message: `Failed to join game with acccessCode: ${accessCode}. Game is currently full.`,
                     game: null
                 };
             }
+
+            await dataSources.gameAPI.joinGame({ gameId: game.id });
 
             return {
                 success: true,

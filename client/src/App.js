@@ -7,6 +7,7 @@ import { Router } from '@reach/router';
 import Login from './Login';
 import Menu from './Menu';
 import Create from './Create';
+import Join from './Join';
 import Game from './Game';
 
 import './App.scss';
@@ -16,9 +17,6 @@ const IS_LOGGED_IN = gql`
     isLoggedIn @client
   }
 `;
-
-// TODO
-const Join = () => <div>Join</div>;
 
 function App() {
   const { data } = useQuery(IS_LOGGED_IN);
@@ -32,6 +30,7 @@ function App() {
                   <Menu path="/" />
                   <Create path="/create" />
                   <Join path="/join" />
+                  <Join path="/join/:accessCode" />
                   <Game path="/game/:accessCode" />
               </Router>
           )}

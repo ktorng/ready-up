@@ -26,6 +26,9 @@ const useStyles = makeStyles(_ => ({
     slider: {
         width: 200,
     },
+    noBorder: {
+        border: 'none',
+    },
 }));
 
 export default useStyles;

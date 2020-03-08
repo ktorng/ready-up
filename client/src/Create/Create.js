@@ -20,8 +20,10 @@ export const CREATE_GAME = gql`
 const Create = () => {
     const navigate = useNavigate();
     const [createGame, { loading, error }] = useMutation(CREATE_GAME, {
-        onCompleted: (data) => {
-            navigate(`/game/${data.createGame.game.accessCode}`);
+        onCompleted: ({ createGame: { success, game }}) => {
+            if (success) {
+                navigate(`/game/${game.accessCode}`);
+            }
         }
     });
 
