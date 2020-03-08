@@ -2,8 +2,7 @@ const { ApolloServer } = require('apollo-server');
 const { get } = require('lodash');
 const isEmail = require('isemail');
 
-const typeDefs = require('./schema');
-const resolvers = require('./resolvers');
+const schema = require('./schema');
 const { createStore } = require('./utils/store');
 
 const UserAPI = require('./datasources/user');
@@ -36,8 +35,7 @@ const context = async ({ req }) => {
 };
 
 const server = new ApolloServer({
-    typeDefs,
-    resolvers,
+    schema,
     dataSources,
     context,
     introspection: true,

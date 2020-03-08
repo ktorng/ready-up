@@ -1,6 +1,48 @@
 const { isEmpty } = require('lodash');
 
-module.exports = {
+const schema = `
+    type Game {
+        id: ID!
+        hostId: String!
+        accessCode: String!
+        status: GameStatus!
+        name: String!
+        description: String!
+        size: Int!
+        users: [User]
+    }
+
+    extend type Query {
+        games: [Game]!
+        game(accessCode: String!): Game
+    }
+
+    extend type Mutation {
+        createGame(size: Int!, description: String!, name: String!): GameUpdateResponse!
+        joinGame(accessCode: String!): GameUpdateResponse!
+        updateGame(gameId: ID!, status: GameStatus): GameUpdateResponse!
+        deleteGame(gameId: ID!): GameUpdateResponse!
+    }
+
+    type GameUpdateResponse {
+        success: Boolean!
+        message: String
+        game: Game
+    }
+    
+    enum GameStatus {
+        WAITING
+        IN_PROGRESS
+        COMPLETED
+    }
+
+    enum GameVisibility {
+        PUBLIC
+        PRIVATE
+    }
+`;
+
+const resolvers = {
     Query: {
         games: (_, __, { dataSources }) =>
             dataSources.gameAPI.getGames(),
@@ -17,16 +59,8 @@ module.exports = {
                 users
             }
         },
-        me: (_, __, { user }) => user
     },
     Mutation: {
-        login: async (_, { name, email }, { dataSources }) => {
-            const user = await dataSources.userAPI.upsertUser({ name, email });
-
-            if (user) {
-                return new Buffer(email).toString('base64');
-            }
-        },
         createGame: async (_, { name, size, description }, { dataSources }) => {
             const game = await dataSources.gameAPI.createGame({ size, name, description });
 
@@ -87,18 +121,12 @@ module.exports = {
             // TODO: handle partial failure
             return {
                 success: deletedGame
-            }
-        },
-        updateUser: async (_, { userId, ...values }, { dataSources }) => {
-            const user = await dataSources.userAPI.updateUser(
-                values,
-                { id: userId }
-            );
-
-            return {
-                success: !!user,
-                user
             };
-        }
+        },
     }
+};
+
+module.exports = {
+    schema,
+    resolvers
 };
