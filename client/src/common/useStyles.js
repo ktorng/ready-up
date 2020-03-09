@@ -23,9 +23,6 @@ const useStyles = makeStyles(_ => ({
         marginTop: 16,
         color: '#575757',
     },
-    slider: {
-        width: 200,
-    },
     noBorder: {
         border: 'none',
     },

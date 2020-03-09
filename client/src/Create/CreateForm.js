@@ -65,7 +65,6 @@ const CreateForm = ({ createGame, loading }) => {
                                     <Slider
                                         field={field}
                                         form={form}
-                                        className={classes.slider}
                                         defaultValue={4}
                                         getAriaValueText={value => `${value} players`}
                                         aria-labelledby="size-slider"
