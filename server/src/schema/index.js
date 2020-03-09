@@ -1,11 +1,11 @@
-const { makeExecutableSchema } = require('apollo-server');
+const { gql, makeExecutableSchema } = require('apollo-server');
 const { merge } = require('lodash');
 
 const { schema: gameSchema, resolvers: gameResolvers } = require('./game');
 const { schema: userSchema, resolvers: userResolvers } = require('./user');
 
 // init for modules to extend
-const rootSchema = `
+const rootSchema = gql`
     type Query {
         _empty: String
     }

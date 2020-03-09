@@ -1,4 +1,6 @@
-const schema = `
+const { gql } = require('apollo-server');
+
+const schema = gql`
     type User {
         id: ID!
         name: String!

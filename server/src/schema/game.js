@@ -1,10 +1,10 @@
-const { PubSub, withFilter } = require('apollo-server');
+const { gql, PubSub, withFilter } = require('apollo-server');
 const { isEmpty } = require('lodash');
 
 const pubsub = new PubSub();
 const PLAYER_JOINED = 'PLAYER_JOINED';
 
-const schema = `
+const schema = gql`
     type Game {
         id: ID!
         hostId: String!
