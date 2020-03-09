@@ -1,4 +1,8 @@
+const { PubSub, withFilter } = require('apollo-server');
 const { isEmpty } = require('lodash');
+
+const pubsub = new PubSub();
+const PLAYER_JOINED = 'PLAYER_JOINED';
 
 const schema = `
     type Game {
@@ -22,6 +26,16 @@ const schema = `
         joinGame(accessCode: String!): GameUpdateResponse!
         updateGame(gameId: ID!, status: GameStatus): GameUpdateResponse!
         deleteGame(gameId: ID!): GameUpdateResponse!
+    }
+    
+    extend type Subscription {
+        playerJoined(gameId: ID!): Player
+    }
+    
+    type Player {
+        gameId: ID!
+        user: User!
+        isNew: Boolean!
     }
 
     type GameUpdateResponse {
@@ -83,18 +97,19 @@ const resolvers = {
             }
 
             const gameUsers = await dataSources.gameAPI.getGameUsers({ gameId: game.id });
+            const isNew = gameUsers.findIndex(gu => gu.userId === user.id) === -1;
 
             // if full and user is not currently in this game
-            if (gameUsers.length === game.size &&
-                gameUsers.findIndex(gu => gu.userId === user.id) === -1) {
+            if (gameUsers.length === game.size && isNew) {
                 return {
                     success: false,
-                    message: `Failed to join game with acccessCode: ${accessCode}. Game is currently full.`,
+                    message: `Failed to join game with accessCode: ${accessCode}. Game is currently full.`,
                     game: null
                 };
             }
 
             await dataSources.gameAPI.joinGame({ gameId: game.id });
+            await pubsub.publish(PLAYER_JOINED, { playerJoined: { gameId: game.id, user, isNew } });
 
             return {
                 success: true,
@@ -123,6 +138,15 @@ const resolvers = {
                 success: deletedGame
             };
         },
+    },
+    Subscription: {
+        playerJoined: {
+            // subscribe only to matching game id
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(PLAYER_JOINED),
+                (payload, variables) => payload.playerJoined.gameId === parseInt(variables.gameId, 10)
+            )
+        }
     }
 };
 

@@ -8,7 +8,7 @@ const { createStore } = require('./utils/store');
 const UserAPI = require('./datasources/user');
 const GameAPI = require('./datasources/game');
 
-// creates a sequelize connection once. NOT for every request
+// creates a sequelize connection once, not for every request
 const store = createStore();
 
 // set up datasources our resolvers need
@@ -18,7 +18,12 @@ const dataSources = () => ({
 });
 
 // function that sets up global context for each resolver, using the request
-const context = async ({ req }) => {
+const context = async ({ req, connection }) => {
+    // context for subscriptions
+    if (connection) {
+        return connection.context;
+    }
+
     // simple auth check on every request
     const auth = get(req, ['headers', 'authorization']) || '';
     const email = new Buffer(auth, 'base64').toString('ascii');
@@ -31,7 +36,9 @@ const context = async ({ req }) => {
     const users = await store.users.findOrCreate({ where: { email }});
     const user = get(users, 0);
 
-    return { user: { ...user.dataValues } };
+    return {
+        user: { ...user.dataValues },
+    };
 };
 
 const server = new ApolloServer({
@@ -40,9 +47,12 @@ const server = new ApolloServer({
     context,
     introspection: true,
     playground: true,
+    subscriptions: {
+        path: '/subscriptions',
+    },
 });
 
-server.listen().then(async ({ url }) => {
+server.listen().then(async ({ url, subscriptionsUrl }) => {
     try {
         await store.db.authenticate();
         console.log('Connection has been established successfully.');
@@ -51,4 +61,5 @@ server.listen().then(async ({ url }) => {
     }
 
     console.log(`Server ready at ${url}`);
+    console.log(`Subscriptions ready at ${subscriptionsUrl}`);
 });

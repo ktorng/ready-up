@@ -4,7 +4,9 @@ import ApolloClient from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
 import { onError } from 'apollo-link-error';
-import { ApolloLink } from 'apollo-link';
+import { ApolloLink, split } from 'apollo-link';
+import { WebSocketLink } from 'apollo-link-ws';
+import { getMainDefinition } from 'apollo-utilities';
 import { persistCache } from 'apollo-cache-persist';
 import { ApolloProvider } from '@apollo/react-hooks';
 
@@ -15,6 +17,34 @@ import * as serviceWorker from './serviceWorker';
 import './index.css';
 
 const cache = new InMemoryCache();
+
+// http link to graphql
+const httpLink = new HttpLink({
+    uri: 'http://localhost:4000',
+    credentials: 'same-origin',
+    headers: { authorization: localStorage.getItem('readyup-token') },
+});
+
+// websocket link to subscriptions
+const wsLink = new WebSocketLink({
+    uri: 'ws://localhost:4000/subscriptions',
+    options: {
+        reconnect: true,
+    },
+});
+
+// split links to send data to each link based on operation type
+const link = split(
+    // split based on operation type
+    ({ query }) => {
+        const definition = getMainDefinition(query);
+
+        return definition.kind === 'OperationDefinition' &&
+            definition.operation === 'subscription';
+    },
+    wsLink,
+    httpLink
+);
 
 const client = new ApolloClient({
     link: ApolloLink.from([
@@ -27,11 +57,7 @@ const client = new ApolloClient({
                 );
             if (networkError) console.log(`[Network error]: ${networkError}`);
         }),
-        new HttpLink({
-            uri: 'http://localhost:4000',
-            credentials: 'same-origin',
-            headers: { authorization: localStorage.getItem('readyup-token') },
-        })
+        link,
     ]),
     cache,
     typeDefs,

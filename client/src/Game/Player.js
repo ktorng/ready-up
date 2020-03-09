@@ -73,7 +73,6 @@ const Player = ({ user, current }) => {
     const classes = useStyles();
     const isCurrent = user.id === get(current, 'id');
     const [updateUser] = useMutation(UPDATE_USER);
-    console.log(current);
 
     return (
         <div className={classes.player}>

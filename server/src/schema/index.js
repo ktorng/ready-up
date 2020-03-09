@@ -4,12 +4,17 @@ const { merge } = require('lodash');
 const { schema: gameSchema, resolvers: gameResolvers } = require('./game');
 const { schema: userSchema, resolvers: userResolvers } = require('./user');
 
+// init for modules to extend
 const rootSchema = `
     type Query {
         _empty: String
     }
     
     type Mutation {
+        _empty: String
+    }
+    
+    type Subscription {
         _empty: String
     }
 `;

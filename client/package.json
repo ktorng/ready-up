@@ -17,6 +17,7 @@
     "apollo-link": "^1.2.13",
     "apollo-link-error": "^1.1.12",
     "apollo-link-http": "^1.5.16",
+    "apollo-link-ws": "^1.0.19",
     "classnames": "^2.2.6",
     "formik": "^2.1.4",
     "formik-material-ui": "^2.0.0-beta.1",
@@ -25,7 +26,8 @@
     "isemail": "^3.2.0",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
-    "react-scripts": "3.4.0"
+    "react-scripts": "3.4.0",
+    "subscriptions-transport-ws": "^0.9.16"
   },
   "scripts": {
     "start": "react-scripts start",
