@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import ApolloClient from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
+import { setContext } from 'apollo-link-context';
 import { onError } from 'apollo-link-error';
 import { ApolloLink, split } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
@@ -18,12 +19,19 @@ import './index.css';
 
 const cache = new InMemoryCache();
 
+const authLink = setContext((_, { headers }) => ({
+    // get auth token if it exists and return headers to context for httpLink to read
+    headers: {
+        ...headers,
+        authorization: localStorage.getItem('readyup-token'),
+    },
+}));
+
 // http link to graphql
-const httpLink = new HttpLink({
+const httpLink = authLink.concat(new HttpLink({
     uri: 'http://localhost:4000',
     credentials: 'same-origin',
-    headers: { authorization: localStorage.getItem('readyup-token') },
-});
+}));
 
 // websocket link to subscriptions
 const wsLink = new WebSocketLink({

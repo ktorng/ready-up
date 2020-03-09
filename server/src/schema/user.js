@@ -13,7 +13,12 @@ const schema = `
 
     extend type Mutation {
         updateUser(userId: ID!, status: UserStatus, statusMessage: String): UserUpdateResponse!
-        login(name: String, email: String!): String # login token
+        login(name: String, email: String!): LoginResponse
+    }
+    
+    type LoginResponse {
+        token: String
+        user: User
     }
 
     type UserUpdateResponse {
@@ -37,7 +42,10 @@ const resolvers = {
             const user = await dataSources.userAPI.upsertUser({ name, email });
 
             if (user) {
-                return new Buffer(email).toString('base64');
+                return {
+                    token: new Buffer(email).toString('base64'),
+                    user: user.dataValues
+                };
             }
         },
         updateUser: async (_, { userId, ...values }, { dataSources }) => {
