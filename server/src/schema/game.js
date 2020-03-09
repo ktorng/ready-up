@@ -57,22 +57,19 @@ const schema = gql`
 `;
 
 const resolvers = {
+    Game: {
+        // get users in a game using the root object's id (game id)
+        users: async ({ id }, _, { dataSources }) => {
+            const gameUsers = await dataSources.gameAPI.getGameUsers({ gameId: id });
+
+            return dataSources.userAPI.getUsers(gameUsers.map(gameUser => gameUser.userId));
+        }
+    },
     Query: {
         games: (_, __, { dataSources }) =>
             dataSources.gameAPI.getGames(),
-        game: async (_, { accessCode }, { dataSources }) => {
-            const game = await dataSources.gameAPI.getGame({ accessCode });
-
-            if (!game) return;
-
-            const gameUsers = await dataSources.gameAPI.getGameUsers({ gameId: game.id });
-            const users = await dataSources.userAPI.getUsers(gameUsers.map(gameUser => gameUser.userId));
-
-            return {
-                ...game,
-                users
-            }
-        },
+        game: (_, { accessCode }, { dataSources }) =>
+            dataSources.gameAPI.getGame({ accessCode }),
     },
     Mutation: {
         createGame: async (_, { name, size, description }, { dataSources }) => {
