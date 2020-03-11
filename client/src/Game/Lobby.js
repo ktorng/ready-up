@@ -4,8 +4,10 @@ import classNames from 'classnames';
 import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
-import Player, { useStyles as playerStyles } from './Player';
+import Player from './Player';
 import { USER_DATA } from '../common/schema';
+
+import usePlayerStyles from './usePlayerStyles';
 import useStyles from '../common/useStyles';
 
 const GET_CURRENT_USER = gql`
@@ -19,7 +21,7 @@ const GET_CURRENT_USER = gql`
 
 const Lobby = ({ game, subscribe }) => {
     const classes = useStyles();
-    const playerClasses = playerStyles();
+    const playerClasses = usePlayerStyles();
     const { data } = useQuery(GET_CURRENT_USER);
 
     /**

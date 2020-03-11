@@ -3,43 +3,10 @@ import T from 'prop-types';
 import { get } from 'lodash';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import CheckBoxOutlineBlankRoundedIcon from '@material-ui/icons/CheckBoxOutlineBlankRounded';
-import CheckBoxRoundedIcon from '@material-ui/icons/CheckBoxRounded';
-import { makeStyles } from '@material-ui/core/styles';
 
+import PlayerReady from './PlayerReady';
+import usePlayerStyles from './usePlayerStyles';
 import { USER_DATA } from '../common/schema';
-
-export const useStyles = makeStyles(_ => ({
-    player: {
-        width: '100%',
-        display: 'flex',
-        background: '#ececec',
-        padding: 8,
-        marginBottom: 8,
-        fontSize: 14,
-        alignItems: 'center',
-    },
-    header: {
-        fontSize: 10,
-        fontWeight: 600,
-        lineHeight: 0.5,
-    },
-    empty: {
-        justifyContent: 'center',
-        fontSize: 12,
-    },
-    name: {
-        flex: '0 0 25%',
-    },
-    ready: {
-        flex: '0 0 15%',
-        display: 'flex',
-        alignItems: 'center',
-    },
-    note: {
-        flex: '0 0 50%',
-    },
-}));
 
 const GET_USER = gql`
     query getUser($userId: ID!) {
@@ -62,46 +29,8 @@ const UPDATE_USER = gql`
     ${USER_DATA}
 `;
 
-const ReadyIcon = ({ game, isCurrent, user, updateUser }) => {
-    const ready = user.status === 'READY';
-    console.log(ready);
-
-    const updateStatus = () => {
-        const status = ready ? 'WAITING' : 'READY';
-        updateUser({
-            variables: {
-                gameId: game.id,
-                userId: user.id,
-                status,
-            },
-            // provide optimistic update for local cache
-            optimisticResponse: {
-                __typename: 'Mutation',
-                updateUser: {
-                    __typename: 'UserUpdateResponse',
-                    success: true,
-                    user: {
-                        ...user,
-                        status,
-                    },
-                },
-            }
-        });
-    };
-
-    return (
-        <div {...(isCurrent && { onClick: updateStatus })}>
-            {ready ? (
-                <CheckBoxRoundedIcon />
-            ) : (
-                <CheckBoxOutlineBlankRoundedIcon />
-            )}
-        </div>
-    )
-};
-
 const Player = ({ game, userId, current }) => {
-    const classes = useStyles();
+    const classes = usePlayerStyles();
     const isCurrent = userId === get(current, 'id');
     const { data: { user } } = useQuery(GET_USER, { variables: { userId: userId }});
     const [updateUser] = useMutation(UPDATE_USER);
@@ -112,7 +41,7 @@ const Player = ({ game, userId, current }) => {
                 {user.name}
             </div>
             <div className={classes.ready}>
-                <ReadyIcon
+                <PlayerReady
                     isCurrent={isCurrent}
                     game={game}
                     user={user}
