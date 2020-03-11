@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
-import { mergeWith } from 'lodash';
 import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { useParams } from '@reach/router';
 
 import Lobby from './Lobby';
+import { playerJoined } from './subscriptions';
 import Loading from '../common/Loading';
-import { GAME_DATA, USER_DATA } from '../common/schema';
+import { GAME_DATA } from '../common/schema';
 
 const GET_GAME = gql`
     query getGame($accessCode: String!) {
@@ -17,18 +17,6 @@ const GET_GAME = gql`
     ${GAME_DATA}
 `;
 
-const PLAYER_JOINED = gql`
-    subscription playerJoined($gameId: ID!) {
-        playerJoined(gameId: $gameId) {
-            user {
-                ...UserData
-            }
-            isNew
-        }
-    }
-    ${USER_DATA}
-`;
-
 const Game = () => {
     const { accessCode } = useParams();
     const { data, loading, error, subscribeToMore } = useQuery(GET_GAME, {
@@ -36,23 +24,12 @@ const Game = () => {
         fetchPolicy: 'network-only',
     });
 
+    /**
+     * Add subscriptions for players joining, user updates, game updates
+     */
     useEffect(() => {
         if (data) {
-            // subscribe to new users joining the game
-            subscribeToMore({
-                document: PLAYER_JOINED,
-                variables: { gameId: data.game.id },
-                updateQuery: (prev, { subscriptionData }) => {
-                    if (!subscriptionData.data || !subscriptionData.data.playerJoined.isNew) return prev;
-
-                    return mergeWith(
-                        {},
-                        prev,
-                        { game: { users: [subscriptionData.data.playerJoined.user] } },
-                        (dst, src) => Array.isArray(dst) ? [...dst, ...src] : undefined
-                    );
-                },
-            })
+            subscribeToMore(playerJoined(data));
         }
     }, [subscribeToMore, data]);
 
