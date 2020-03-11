@@ -47,6 +47,13 @@ class UserAPI extends DataSource {
     }
 
     /**
+     * Gets a single user record queried by options
+     */
+    getUser(options) {
+        return this.store.users.findOne({ where: options });
+    }
+
+    /**
      * Updates a user record and then returns the updated record
      */
     async updateUser(values, options) {

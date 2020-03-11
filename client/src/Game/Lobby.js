@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import T from 'prop-types';
 import classNames from 'classnames';
 import { useQuery } from '@apollo/react-hooks';
@@ -17,10 +17,17 @@ const GET_CURRENT_USER = gql`
     ${USER_DATA}
 `;
 
-const Lobby = ({ game }) => {
+const Lobby = ({ game, subscribe }) => {
     const classes = useStyles();
     const playerClasses = playerStyles();
     const { data } = useQuery(GET_CURRENT_USER);
+
+    /**
+     * Add subscriptions for players joining, user updates, game updates
+     */
+    useEffect(() => {
+        subscribe(data.me.id);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div className={classes.containerCenter}>
@@ -31,20 +38,26 @@ const Lobby = ({ game }) => {
                 <div className={playerClasses.ready}>Ready</div>
                 <div className={playerClasses.note}>Note</div>
             </div>
-            {game.users.map(user =>
-                <Player key={user.email} user={user} current={data.me} />
-            )}
-            {Array(game.size - game.users.length).fill(0).map((_, i) =>
-                <div key={`open-slot-${i+1}`} className={classNames(playerClasses.player, playerClasses.empty)}>
-                    (open)
-                </div>
-            )}
+            {game.users.map((user) => (
+                <Player key={user.email} game={game} userId={user.id} current={data.me} />
+            ))}
+            {Array(game.size - game.users.length)
+                .fill(0)
+                .map((_, i) => (
+                    <div
+                        key={`open-slot-${i + 1}`}
+                        className={classNames(playerClasses.player, playerClasses.empty)}
+                    >
+                        (open)
+                    </div>
+                ))}
         </div>
     );
 };
 
 Lobby.propTypes = {
     game: T.object,
+    subscribe: T.func.isRequired
 };
 
 export default Lobby;

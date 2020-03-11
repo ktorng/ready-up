@@ -29,10 +29,10 @@ const schema = gql`
     }
     
     extend type Subscription {
-        playerJoined(gameId: ID!): Player
+        playerJoined(gameId: ID!): PlayerJoinedPayload
     }
     
-    type Player {
+    type PlayerJoinedPayload {
         gameId: ID!
         user: User!
         isNew: Boolean!

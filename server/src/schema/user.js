@@ -15,15 +15,26 @@ module.exports = {
 
         extend type Query {
             me: User
+            user(userId: ID!): User
         }
 
         extend type Mutation {
-            updateUser(userId: ID!, status: UserStatus, statusMessage: String): UserUpdateResponse!
+            updateUser(
+                userId: ID!
+                gameId: ID!
+                status: UserStatus
+                statusMessage: String
+            ): UserUpdateResponse!
             login(name: String, email: String!): LoginResponse
         }
 
         extend type Subscription {
-            userUpdated(gameId: ID!): User!
+            userUpdated(gameId: ID!, currentUserId: ID!): UserUpdatedPayload!
+        }
+        
+        type UserUpdatedPayload {
+            gameId: ID!
+            user: User!
         }
 
         type LoginResponse {
@@ -44,7 +55,12 @@ module.exports = {
     `,
     resolvers: {
         Query: {
-            me: (_, __, { user }) => user
+            me: (_, __, { user }) => user,
+            user: async (_, { userId }, { dataSources }) => {
+                const user = await dataSources.userAPI.getUser({ id: userId });
+
+                return !!user && user.dataValues;
+            }
         },
         Mutation: {
             login: async (_, { name, email }, { dataSources }) => {
@@ -57,9 +73,9 @@ module.exports = {
                     };
                 }
             },
-            updateUser: async (_, { userId, ...values }, { dataSources }) => {
-                const user = await dataSources.userAPI.updateUser(values, { id: userId });
-                await pubsub.publish(USER_UPDATED, { userUpdated: { gameId: game.id, user } });
+            updateUser: async (_, { userId, gameId, ...values }, { dataSources }) => {
+                const { dataValues: user } = await dataSources.userAPI.updateUser(values, { id: userId });
+                await pubsub.publish(USER_UPDATED, { userUpdated: { gameId, user } });
 
                 return {
                     success: !!user,
@@ -72,8 +88,8 @@ module.exports = {
                 // subscribe only to matching game id
                 subscribe: withFilter(
                     () => pubsub.asyncIterator(USER_UPDATED),
-                    (payload, variables) =>
-                        payload.userUpdated.gameId === parseInt(variables.gameId, 10)
+                    (payload, variables) => payload.userUpdated.gameId === variables.gameId &&
+                        payload.userUpdated.user.id !== parseInt(variables.currentUserId, 10)
                 )
             }
         }

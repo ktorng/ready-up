@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { debounce, get } from 'lodash';
+import React from 'react';
+import T from 'prop-types';
+import { get } from 'lodash';
 import gql from 'graphql-tag';
-import { useMutation } from '@apollo/react-hooks';
+import { useMutation, useQuery } from '@apollo/react-hooks';
 import CheckBoxOutlineBlankRoundedIcon from '@material-ui/icons/CheckBoxOutlineBlankRounded';
 import CheckBoxRoundedIcon from '@material-ui/icons/CheckBoxRounded';
-
 import { makeStyles } from '@material-ui/core/styles';
+
+import { USER_DATA } from '../common/schema';
 
 export const useStyles = makeStyles(_ => ({
     player: {
@@ -39,23 +41,52 @@ export const useStyles = makeStyles(_ => ({
     },
 }));
 
-const UPDATE_USER = gql`
-    mutation updateUser($userId: ID!, $status: UserStatus, $statusMessage: String) {
-        updateUser(userId: $userId, status: $status, statusMessage: $statusMessage) {
-            success
+const GET_USER = gql`
+    query getUser($userId: ID!) {
+        user(userId: $userId) @client {
+            ...UserData
         }
     }
+    ${USER_DATA}
 `;
 
-const ReadyIcon = ({ isCurrent, user, updateUser }) => {
-    const [ready, setReady] = useState(user.status === 'READY');
+const UPDATE_USER = gql`
+    mutation updateUser($userId: ID!, $gameId: ID!, $status: UserStatus, $statusMessage: String) {
+        updateUser(userId: $userId, gameId: $gameId, status: $status, statusMessage: $statusMessage) {
+            success,
+            user {
+                ...UserData
+            }
+        }
+    }
+    ${USER_DATA}
+`;
+
+const ReadyIcon = ({ game, isCurrent, user, updateUser }) => {
+    const ready = user.status === 'READY';
+    console.log(ready);
 
     const updateStatus = () => {
-        setReady(!ready);
-        updateUser({ variables: {
-            userId: user.id,
-            status: ready ? 'WAITING' : 'READY'
-        }});
+        const status = ready ? 'WAITING' : 'READY';
+        updateUser({
+            variables: {
+                gameId: game.id,
+                userId: user.id,
+                status,
+            },
+            // provide optimistic update for local cache
+            optimisticResponse: {
+                __typename: 'Mutation',
+                updateUser: {
+                    __typename: 'UserUpdateResponse',
+                    success: true,
+                    user: {
+                        ...user,
+                        status,
+                    },
+                },
+            }
+        });
     };
 
     return (
@@ -69,9 +100,10 @@ const ReadyIcon = ({ isCurrent, user, updateUser }) => {
     )
 };
 
-const Player = ({ user, current }) => {
+const Player = ({ game, userId, current }) => {
     const classes = useStyles();
-    const isCurrent = user.id === get(current, 'id');
+    const isCurrent = userId === get(current, 'id');
+    const { data: { user } } = useQuery(GET_USER, { variables: { userId: userId }});
     const [updateUser] = useMutation(UPDATE_USER);
 
     return (
@@ -82,8 +114,9 @@ const Player = ({ user, current }) => {
             <div className={classes.ready}>
                 <ReadyIcon
                     isCurrent={isCurrent}
+                    game={game}
                     user={user}
-                    updateUser={debounce(updateUser, 300)}
+                    updateUser={updateUser}
                 />
             </div>
             <div className={classes.note}>
@@ -91,6 +124,12 @@ const Player = ({ user, current }) => {
             </div>
         </div>
     );
+};
+
+Player.propTypes = {
+    game: T.object,
+    user: T.object,
+    current: T.object
 };
 
 export default Player;

@@ -17,7 +17,17 @@ import * as serviceWorker from './serviceWorker';
 
 import './index.css';
 
-const cache = new InMemoryCache();
+const cache = new InMemoryCache({
+    cacheRedirects: {
+        Query: {
+            user: (_, args, { getCacheKey }) =>
+                getCacheKey({
+                    __typename: 'User',
+                    id: args.userId
+                })
+        }
+    }
+});
 
 const authLink = setContext((_, { headers }) => ({
     // get auth token if it exists and return headers to context for httpLink to read
