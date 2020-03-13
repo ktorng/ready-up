@@ -4,19 +4,21 @@ import { Button } from '@material-ui/core';
 
 import useStyles from '../common/useStyles';
 
-const GameActions = ({ isStartDisabled }) => {
+const GameActions = ({ isStartDisabled, isHost }) => {
     const classes = useStyles();
 
     return (
         <div>
-            <Button
-                className={classes.button}
-                variant="contained"
-                color="primary"
-                disabled={isStartDisabled}
-            >
-                Start
-            </Button>
+            {isHost && (
+                <Button
+                    className={classes.button}
+                    variant="contained"
+                    color="primary"
+                    disabled={isStartDisabled}
+                >
+                    Start
+                </Button>
+            )}
             <Button
                 className={classes.button}
                 variant="contained"
@@ -30,6 +32,7 @@ const GameActions = ({ isStartDisabled }) => {
 
 GameActions.propTypes = {
     isStartDisabled: T.bool.isRequired,
+    isHost: T.bool.isRequired,
 };
 
 export default GameActions;

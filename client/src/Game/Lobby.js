@@ -23,8 +23,10 @@ const GET_CURRENT_USER = gql`
 const Lobby = ({ game, subscribe }) => {
     const classes = useStyles();
     const playerClasses = usePlayerStyles();
-    const isStartDisabled = game.users.some(user => user.status !== 'READY');
     const { data } = useQuery(GET_CURRENT_USER);
+
+    const isStartDisabled = game.users.some(user => user.status !== 'READY');
+    const isHost = data.me.id === game.hostId;
 
     /**
      * Add subscriptions for players joining, user updates, game updates
@@ -55,7 +57,7 @@ const Lobby = ({ game, subscribe }) => {
                         (open)
                     </div>
                 ))}
-            <GameActions isStartDisabled={isStartDisabled} />
+            <GameActions isStartDisabled={isStartDisabled} isHost={isHost} />
         </div>
     );
 };
