@@ -5,6 +5,7 @@ import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
 import Player from './Player';
+import GameActions from './GameActions';
 import { USER_DATA } from '../common/schema';
 
 import usePlayerStyles from './usePlayerStyles';
@@ -22,6 +23,7 @@ const GET_CURRENT_USER = gql`
 const Lobby = ({ game, subscribe }) => {
     const classes = useStyles();
     const playerClasses = usePlayerStyles();
+    const isStartDisabled = game.users.some(user => user.status !== 'READY');
     const { data } = useQuery(GET_CURRENT_USER);
 
     /**
@@ -53,6 +55,7 @@ const Lobby = ({ game, subscribe }) => {
                         (open)
                     </div>
                 ))}
+            <GameActions isStartDisabled={isStartDisabled} />
         </div>
     );
 };

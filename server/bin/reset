@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-const { createStore } = require('../src/utils/store');
+const store = require('../src/utils/store');
 
-const { db } = createStore();
+const { db } = store;
 db
   .sync({ force: true })
   .then(() => {

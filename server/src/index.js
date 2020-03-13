@@ -3,13 +3,12 @@ const { get } = require('lodash');
 const isEmail = require('isemail');
 
 const schema = require('./schema');
-const { createStore } = require('./utils/store');
+const store = require('./utils/store');
 
 const UserAPI = require('./datasources/user');
 const GameAPI = require('./datasources/game');
 
 // creates a sequelize connection once, not for every request
-const store = createStore();
 
 // set up datasources our resolvers need
 const dataSources = () => ({

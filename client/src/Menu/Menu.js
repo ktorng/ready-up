@@ -11,7 +11,7 @@ const Menu = () => {
     return (
         <div className={classes.containerCenter}>
             <h1>Games</h1>
-            <div className="Games-actions">
+            <div>
                 <Button
                     className={classes.button}
                     variant="contained"

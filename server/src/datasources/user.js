@@ -3,6 +3,8 @@ const { get, pick } = require('lodash');
 const { Sequelize } = require('sequelize');
 const isEmail = require('isemail');
 
+const store = require('../utils/store');
+
 class UserAPI extends DataSource {
     constructor({ store }) {
         super();
@@ -37,13 +39,13 @@ class UserAPI extends DataSource {
     /**
      * Gets user records queried by list of userIds
      */
-    async getUsers(userIds) {
-        const { in: opIn } = Sequelize.Op;
-        const users = await this.store.users.findAll({
-            where: { id: { [opIn] : userIds } }
+    async getPlayers(gameId) {
+        const players = await this.store.gameUsers.findAll({
+            where: { gameId },
+            include: [store.users],
         });
 
-        return users.map(this.userReducer);
+        return players.map(player => this.userReducer(player.user));
     }
 
     /**

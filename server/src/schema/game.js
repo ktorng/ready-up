@@ -60,9 +60,9 @@ const resolvers = {
     Game: {
         // get users in a game using the root object's id (game id)
         users: async ({ id }, _, { dataSources }) => {
-            const gameUsers = await dataSources.gameAPI.getGameUsers({ gameId: id });
+            // const gameUsers = await dataSources.gameAPI.getGameUsers({ gameId: id });
 
-            return dataSources.userAPI.getUsers(gameUsers.map(gameUser => gameUser.userId));
+            return dataSources.userAPI.getPlayers(id);
         }
     },
     Query: {
