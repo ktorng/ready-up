@@ -26,6 +26,7 @@ const schema = gql`
         joinGame(accessCode: String!): GameUpdateResponse!
         updateGame(gameId: ID!, status: GameStatus): GameUpdateResponse!
         deleteGame(gameId: ID!): GameUpdateResponse!
+        startGame(type: GameType, gameId: ID!): GameUpdateResponse!
     }
     
     extend type Subscription {
@@ -53,6 +54,10 @@ const schema = gql`
     enum GameVisibility {
         PUBLIC
         PRIVATE
+    }
+    
+    enum GameType {
+        GENERIC
     }
 `;
 
