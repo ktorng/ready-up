@@ -1,8 +1,11 @@
 const { gql, PubSub, withFilter } = require('apollo-server');
-const { isEmpty } = require('lodash');
+const { get, isEmpty } = require('lodash');
 
 const pubsub = new PubSub();
-const PLAYER_JOINED = 'PLAYER_JOINED';
+const events = {
+    PLAYER_JOINED: 'PLAYER_JOINED',
+    PLAYER_LEFT: 'PLAYER_LEFT'
+};
 
 const schema = gql`
     type Game {
@@ -24,15 +27,24 @@ const schema = gql`
     extend type Mutation {
         createGame(size: Int!, description: String!, name: String!): GameUpdateResponse!
         joinGame(accessCode: String!): GameUpdateResponse!
+        leaveGame(gameId: ID!): GameUpdateResponse!
         updateGame(gameId: ID!, status: GameStatus): GameUpdateResponse!
         deleteGame(gameId: ID!): GameUpdateResponse!
         startGame(type: GameType, gameId: ID!): GameUpdateResponse!
     }
-    
+
     extend type Subscription {
         playerJoined(gameId: ID!): PlayerJoinedPayload
+        playerLeft(gameId: ID!): PlayerLeftPayload
     }
-    
+
+    type PlayerLeftPayload {
+        gameId: ID!
+        userId: ID!
+        hostId: ID
+        isDeleted: Boolean!
+    }
+
     type PlayerJoinedPayload {
         gameId: ID!
         user: User!
@@ -44,7 +56,7 @@ const schema = gql`
         message: String
         game: Game
     }
-    
+
     enum GameStatus {
         WAITING
         IN_PROGRESS
@@ -55,7 +67,7 @@ const schema = gql`
         PUBLIC
         PRIVATE
     }
-    
+
     enum GameType {
         GENERIC
     }
@@ -71,10 +83,8 @@ const resolvers = {
         }
     },
     Query: {
-        games: (_, __, { dataSources }) =>
-            dataSources.gameAPI.getGames(),
-        game: (_, { accessCode }, { dataSources }) =>
-            dataSources.gameAPI.getGame({ accessCode }),
+        games: (_, __, { dataSources }) => dataSources.gameAPI.getGames(),
+        game: (_, { accessCode }, { dataSources }) => dataSources.gameAPI.getGame({ accessCode })
     },
     Mutation: {
         createGame: async (_, { name, size, description }, { dataSources }) => {
@@ -82,7 +92,9 @@ const resolvers = {
 
             return {
                 success: !!game,
-                message: game ? 'Successfully created game' : `Failed to create game: ${name} (${size})`,
+                message: game
+                    ? 'Successfully created game'
+                    : `Failed to create game: ${name} (${size})`,
                 game
             };
         },
@@ -99,7 +111,7 @@ const resolvers = {
             }
 
             const gameUsers = await dataSources.gameAPI.getGameUsers({ gameId: game.id });
-            const isNew = gameUsers.findIndex(gu => gu.userId === user.id) === -1;
+            const isNew = gameUsers.findIndex((gu) => gu.userId === user.id) === -1;
 
             // if full and user is not currently in this game
             if (gameUsers.length === game.size && isNew) {
@@ -111,7 +123,9 @@ const resolvers = {
             }
 
             await dataSources.gameAPI.joinGame({ gameId: game.id });
-            await pubsub.publish(PLAYER_JOINED, { playerJoined: { gameId: game.id, user, isNew } });
+            await pubsub.publish(events.PLAYER_JOINED, {
+                playerJoined: { gameId: game.id, user, isNew }
+            });
 
             return {
                 success: true,
@@ -119,11 +133,50 @@ const resolvers = {
                 game
             };
         },
+        /**
+         * Current user leaves game. If user was the only player, deletes the game, otherwise
+         * publishes a playerLeft event. If user was the host, passes host to next player.
+         */
+        leaveGame: async (_, { gameId }, { dataSources, user }) => {
+            try {
+                const players = await dataSources.gameAPI.getGameUsers({ gameId });
+                let game = await dataSources.gameAPI.getGame({ id: gameId });
+                let hostId = game.hostId;
+
+                await dataSources.gameAPI.deleteGameUsers({ userId: user.id, gameId });
+
+                if (players.length === 1) {
+                    await dataSources.gameAPI.deleteGame({ id: gameId });
+                    game = null;
+                } else {
+                    const nextHost = players.find((player) => player.userId !== game.hostId);
+                    // pass host
+                    if (user.id === game.hostId) {
+                        await dataSources.gameAPI.updateGame(
+                            { hostId: nextHost.userId },
+                            { id: gameId }
+                        );
+                        hostId = nextHost.userId;
+                    }
+                }
+
+                await pubsub.publish(events.PLAYER_LEFT, {
+                    playerLeft: {
+                        gameId,
+                        userId: user.id,
+                        isDeleted: !game,
+                        hostId
+                    }
+                });
+
+                return { success: true };
+            } catch (e) {
+                console.error(e);
+                return { success: false };
+            }
+        },
         updateGame: async (_, { gameId, status }, { dataSources }) => {
-            const game = await dataSources.gameAPI.updateGame(
-                { status },
-                { id: gameId }
-            );
+            const game = await dataSources.gameAPI.updateGame({ status }, { id: gameId });
 
             return {
                 success: !!game,
@@ -139,14 +192,22 @@ const resolvers = {
             return {
                 success: deletedGame
             };
-        },
+        }
     },
     Subscription: {
         playerJoined: {
             // subscribe only to matching game id
             subscribe: withFilter(
-                () => pubsub.asyncIterator(PLAYER_JOINED),
-                (payload, variables) => payload.playerJoined.gameId === parseInt(variables.gameId, 10)
+                () => pubsub.asyncIterator(events.PLAYER_JOINED),
+                (payload, variables) =>
+                    parseInt(payload.playerJoined.gameId, 10) === parseInt(variables.gameId, 10)
+            )
+        },
+        playerLeft: {
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(events.PLAYER_LEFT),
+                (payload, variables) =>
+                    parseInt(payload.playerLeft.gameId, 10) === parseInt(variables.gameId, 10)
             )
         }
     }

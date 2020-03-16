@@ -4,7 +4,7 @@ import gql from 'graphql-tag';
 import { useParams } from '@reach/router';
 
 import Lobby from './Lobby';
-import { playerJoined, userUpdated } from './subscriptions';
+import { playerJoined, playerLeft, userUpdated } from './subscriptions';
 import Loading from '../common/Loading';
 import { GAME_DATA } from '../common/schema';
 
@@ -25,6 +25,7 @@ const Game = () => {
     });
     const subscribe = (userId) => {
         subscribeToMore(playerJoined(data.game.id));
+        subscribeToMore(playerLeft(data.game.id));
         subscribeToMore(userUpdated(data.game.id, userId));
     };
 

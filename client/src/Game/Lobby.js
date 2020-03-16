@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import T from 'prop-types';
 import classNames from 'classnames';
-import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
+import { useMutation, useQuery } from '@apollo/react-hooks';
+import { useNavigate } from '@reach/router';
 
 import Player from './Player';
 import GameActions from './GameActions';
@@ -20,16 +21,33 @@ const GET_CURRENT_USER = gql`
     ${USER_DATA}
 `;
 
+const LEAVE_GAME = gql`
+    mutation leaveGame($gameId: ID!) {
+        leaveGame(gameId: $gameId) {
+            success
+        }
+    }
+`;
+
 const Lobby = ({ game, subscribe }) => {
     const classes = useStyles();
     const playerClasses = usePlayerStyles();
     const { data } = useQuery(GET_CURRENT_USER);
+    const navigate = useNavigate();
+    const [leaveGame] = useMutation(LEAVE_GAME, {
+        variables: { gameId: game.id },
+        onCompleted: ({ leaveGame: { success } }) => {
+            if (success) {
+                navigate('/');
+            }
+        }
+    });
 
     const isStartDisabled = game.users.some(user => user.status !== 'READY');
     const isHost = data.me.id === game.hostId;
 
     /**
-     * Add subscriptions for players joining, user updates, game updates
+     * Add subscriptions for player updates, game updates
      */
     useEffect(() => {
         subscribe(data.me.id);
@@ -57,7 +75,7 @@ const Lobby = ({ game, subscribe }) => {
                         (open)
                     </div>
                 ))}
-            <GameActions isStartDisabled={isStartDisabled} isHost={isHost} />
+            <GameActions isStartDisabled={isStartDisabled} isHost={isHost} leaveGame={leaveGame} />
         </div>
     );
 };

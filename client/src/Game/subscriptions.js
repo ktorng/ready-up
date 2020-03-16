@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { mergeWith } from 'lodash';
+import { merge, mergeWith } from 'lodash';
 import { USER_DATA } from '../common/schema';
 
 const PLAYER_JOINED = gql`
@@ -12,6 +12,16 @@ const PLAYER_JOINED = gql`
         }
     }
     ${USER_DATA}
+`;
+
+const PLAYER_LEFT = gql`
+    subscription playerLeft($gameId: ID!) {
+        playerLeft(gameId: $gameId) {
+            userId
+            hostId
+            isDeleted
+        }
+    }
 `;
 
 const USER_UPDATED = gql`
@@ -40,6 +50,28 @@ export const playerJoined = (gameId) => ({
     }
 });
 
+export const playerLeft = (gameId) => ({
+    document: PLAYER_LEFT,
+    variables: { gameId },
+    updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+
+        const { isDeleted, userId, hostId } = subscriptionData.data.playerLeft;
+
+        if (isDeleted) {
+            return { ...prev, game: null };
+        }
+
+        return {
+            game: {
+                ...prev.game,
+                users: prev.game.users.filter((user) => user.id !== userId),
+                hostId
+            }
+        }
+    }
+});
+
 export const userUpdated = (gameId, userId) => ({
     document: USER_UPDATED,
     variables: { gameId, currentUserId: userId },
@@ -52,6 +84,6 @@ export const userUpdated = (gameId, userId) => ({
             user.id === userUpdated.id ? userUpdated : user
         );
 
-        return mergeWith({}, nextState);
+        return merge({}, nextState);
     }
 });
