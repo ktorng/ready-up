@@ -72,7 +72,8 @@ class UserAPI extends DataSource {
             'email',
             'name',
             'status',
-            'statusMessage'
+            'statusMessage',
+            'playerState'
         ]);
     }
 }

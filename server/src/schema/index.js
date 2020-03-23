@@ -3,6 +3,7 @@ const { merge } = require('lodash');
 
 const { schema: gameSchema, resolvers: gameResolvers } = require('./game');
 const { schema: userSchema, resolvers: userResolvers } = require('./user');
+const { schema: crewSchema, resolvers: crewResolvers } = require('./crew');
 
 // init for modules to extend
 const rootSchema = gql`
@@ -20,6 +21,6 @@ const rootSchema = gql`
 `;
 
 module.exports = makeExecutableSchema({
-    typeDefs: [rootSchema, gameSchema, userSchema],
-    resolvers: merge(gameResolvers, userResolvers)
+    typeDefs: [rootSchema, gameSchema, userSchema, crewSchema],
+    resolvers: merge(gameResolvers, userResolvers, crewResolvers)
 });

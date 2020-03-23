@@ -84,10 +84,21 @@ class GameAPI extends DataSource {
      * Updates a game record's values queried by options
      */
     async updateGame(values, options) {
-        const updated = await this.store.games.update(values, { where: options});
+        const updated = await this.store.games.update(values, { where: options });
 
         if (updated[0]) {
             return this.store.games.findOne({ where: options });
+        }
+    }
+
+    /**
+     * Updates a player record's values queried by options
+     */
+    async updateGameUser(values, options) {
+        const updated = await this.store.gameUsers.update(values, { where: options });
+
+        if (updated[0]) {
+            return this.store.gameUsers.findOne({ where: options });
         }
     }
 
@@ -118,6 +129,7 @@ class GameAPI extends DataSource {
             'status',
             'size',
             'description',
+            'gameState'
         ]);
     }
 }

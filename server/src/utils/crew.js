@@ -9,7 +9,7 @@ module.exports = {
      *
      * @returns {{isCommander: boolean, hand: []}[]}
      */
-    generateGame: () => {
+    generatePlayers: () => {
         const players = [...Array(4)].map(() => ({ isCommander: false, hand: [] }));
         const cards = colors.reduce(
             (tot, color) => [

@@ -90,16 +90,13 @@ const createStore = () => {
             allowNull: false,
             defaultValue: ''
         },
+        gameState: Sequelize.JSON,
     });
 
     const gameUsers = db.define('game_user', {
-        isHost: {
-            type: Sequelize.BOOLEAN,
-            allowNull: false,
-            defaultValue: false
-        },
         createdAt: Sequelize.DATE,
         updatedAt: Sequelize.DATE,
+        playerState: Sequelize.JSON,
     });
     gameUsers.belongsTo(users);
     gameUsers.belongsTo(games);
