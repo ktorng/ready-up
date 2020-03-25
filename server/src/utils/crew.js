@@ -50,7 +50,7 @@ module.exports = {
             unordered: [],
             ordered: [],
             first: null,
-            last: null,
+            last: null
         };
         const cards = colors
             .filter((color) => color !== 'W')
@@ -79,5 +79,71 @@ module.exports = {
         });
 
         return tasks;
+    },
+    /**
+     * Checks who won the round, then returns updated played and tasks objects.
+     *
+     * @param currentRound - list of 4 cards played
+     * @param tasks - task completion status
+     */
+    checkGameState: (currentRound, tasks) => {
+        // check who wins current round
+        const winner = currentRound.reduce(
+            (lead, card) =>
+                !lead ||
+                (card.color === lead.color && card.number > lead.number) ||
+                (card.color === 'W' && lead.color !== 'W')
+                    ? card
+                    : lead,
+            null
+        );
+
+        const gameState = {
+            isLost: false,
+            tasks
+        };
+
+        const isTaskCompleted = (task) =>
+            currentRound.some(
+                (card) =>
+                    card.color === task.color &&
+                    card.number === task.number &&
+                    winner.userId === task.userId
+            );
+
+        // check if unordered task has been completed
+        let i = tasks.unordered.findIndex(isTaskCompleted);
+        if (i > -1) {
+            tasks.unordered.splice(i, 1);
+            if (tasks.first) {
+                gameState.isLost = true;
+            }
+            return gameState;
+        }
+
+        // check if ordered task has been completed
+        i = tasks.ordered.findIndex(isTaskCompleted);
+        if (i > -1) {
+            tasks.ordered.splice(i, 1);
+            if (i > 0 || tasks.first) {
+                gameState.isLost = true;
+            }
+            return gameState;
+        }
+
+        // check first
+        if (tasks.first && isTaskCompleted(tasks.first)) {
+            tasks.first = null;
+            return gameState;
+        }
+
+        // check last
+        if (tasks.last && isTaskCompleted(tasks.last)) {
+            tasks.last = null;
+            if (tasks.unordered.length || tasks.ordered.length || tasks.first) {
+                gameState.isLost = true;
+            }
+            return gameState;
+        }
     }
 };
