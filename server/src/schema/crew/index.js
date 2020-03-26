@@ -1,6 +1,6 @@
 const { gql } = require('apollo-server');
 
-const { generatePlayers, generateMission } = require('../utils/crew');
+const { generatePlayers, generateMission } = require('../../utils/crew');
 
 // TODO: split into separate schema files
 module.exports = {
@@ -13,12 +13,12 @@ module.exports = {
             isCompleted: Boolean!
             type: TaskType # for special mission types
         }
-        
+
         type Mission {
             number: Int!
             tasks: [Task]
         }
-        
+
         type Card {
             number: Int!
             color: String # ['R', 'G', 'B', 'Y', 'W']
@@ -26,21 +26,18 @@ module.exports = {
             order: Int
         }
         
-        extend type Game {
-            gameState: GameState
-        }
-        
-        type GameState {
-            gameId: ID!
-            played: [Card]
-            turn: Int!
-            players: [PlayerState!]!
-        }
-        
-        type PlayerState {
+        type Player {
             userId: ID!
-            hand: [Card]!
-            isCommander: Boolean!
+            gameId: ID!
+            playerState: String
+        }
+
+        extend type Game {
+            gameState: String
+        }
+        
+        extend type GameUpdateResponse {
+            players: [Player]
         }
 
         enum TaskType {
@@ -50,13 +47,11 @@ module.exports = {
             LAST
             SPECIAL
         }
-        
-        extend type Query {
-        }
-        
+
         extend type Mutation {
+            startCrewGame(gameId: ID!): GameUpdateResponse!
         }
-        
+
         extend enum GameType {
             THE_CREW
         }
@@ -64,30 +59,49 @@ module.exports = {
     resolvers: {
         Mutation: {
             startCrewGame: async (_, { gameId }, { dataSources }) => {
+                // TODO: move into util
+                const mockTaskReqs = {
+                    unordered: 3,
+                    ordered: 2
+                };
                 // generate game state and player states
                 const gameState = {
                     gameId,
                     played: [],
+                    tasks: generateMission(5, mockTaskReqs),
                     turn: 0 // 0: mission assignment, -1: complete, 1+: player turns
                 };
                 const playerStates = generatePlayers();
-                // update game object
-                const game = await dataSources.gameAPI.updateGame(
-                    { gameState: JSON.stringify(gameState) },
-                    { id: gameId }
-                );
-                const players = await dataSources.gameAPI.getGameUsers({ gameId: game.id });
-                // update each player object in game
-                await Promise.all(
-                    players.map((player, i) =>
-                        dataSources.gameAPI.updateGameUser(
-                            { playerState: playerStates[i] },
-                            { gameId, userId: player.userId }
-                        )
-                    )
-                );
 
-                // return game state and player states
+                try {
+                    const game = await dataSources.gameAPI.updateGame(
+                        {
+                            status: 'IN_PROGRESS',
+                            gameState: JSON.stringify(gameState)
+                        },
+                        { id: gameId }
+                    );
+                    let players = await dataSources.gameAPI.getGameUsers({ gameId: game.id });
+                    // update each player object in game
+                    players = await Promise.all(
+                        players.map((player, i) =>
+                            dataSources.gameAPI.updateGameUser(
+                                { playerState: JSON.stringify(playerStates[i]) },
+                                { gameId, userId: player.userId }
+                            )
+                        )
+                    );
+
+                    // return game state and player states
+                    return {
+                        success: true,
+                        game: game.dataValues,
+                        players: players.map(player => player.dataValues)
+                    };
+                } catch (e) {
+                    console.error(e);
+                    return { success: false };
+                }
             }
         }
     }

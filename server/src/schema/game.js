@@ -76,11 +76,7 @@ const schema = gql`
 const resolvers = {
     Game: {
         // get users in a game using the root object's id (game id)
-        users: async ({ id }, _, { dataSources }) => {
-            // const gameUsers = await dataSources.gameAPI.getGameUsers({ gameId: id });
-
-            return dataSources.userAPI.getPlayers(id);
-        }
+        users: ({ id }, _, { dataSources }) => dataSources.userAPI.getPlayers(id)
     },
     Query: {
         games: (_, __, { dataSources }) => dataSources.gameAPI.getGames(),

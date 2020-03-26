@@ -4,7 +4,7 @@ import { Button } from '@material-ui/core';
 
 import useStyles from '../common/useStyles';
 
-const GameActions = ({ isStartDisabled, isHost, leaveGame }) => {
+const GameActions = ({ isStartDisabled, isHost, startGame, leaveGame }) => {
     const classes = useStyles();
 
     return (
@@ -15,6 +15,7 @@ const GameActions = ({ isStartDisabled, isHost, leaveGame }) => {
                     variant="contained"
                     color="primary"
                     disabled={isStartDisabled}
+                    onClick={startGame}
                 >
                     Start
                 </Button>
@@ -34,6 +35,7 @@ const GameActions = ({ isStartDisabled, isHost, leaveGame }) => {
 GameActions.propTypes = {
     isStartDisabled: T.bool.isRequired,
     isHost: T.bool.isRequired,
+    startGame: T.func.isRequired,
     leaveGame: T.func.isRequired,
 };
 

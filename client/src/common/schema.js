@@ -19,6 +19,7 @@ export const GAME_DATA = gql`
         name
         description
         size
+        gameState
         users {
             ...UserData
         }

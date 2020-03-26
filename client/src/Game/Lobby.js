@@ -7,7 +7,7 @@ import { useNavigate } from '@reach/router';
 
 import Player from './Player';
 import GameActions from './GameActions';
-import { USER_DATA } from '../common/schema';
+import { USER_DATA, GAME_DATA } from '../common/schema';
 
 import usePlayerStyles from './usePlayerStyles';
 import useStyles from '../common/useStyles';
@@ -29,6 +29,23 @@ const LEAVE_GAME = gql`
     }
 `;
 
+const START_CREW_GAME = gql`
+    mutation startCrewGame($gameId: ID!) {
+        startCrewGame(gameId: $gameId) {
+            success
+            game {
+                ...GameData
+            }
+            players {
+                userId
+                playerState
+            }
+        }
+    }
+    ${GAME_DATA}
+    ${USER_DATA}
+`;
+
 const Lobby = ({ game, subscribe }) => {
     const classes = useStyles();
     const playerClasses = usePlayerStyles();
@@ -40,6 +57,12 @@ const Lobby = ({ game, subscribe }) => {
             if (success) {
                 navigate('/');
             }
+        }
+    });
+    const [startCrewGame] = useMutation(START_CREW_GAME, {
+        variables: { gameId: game.id },
+        onCompleted: ({ startCrewGame: { success, game, players } }) => {
+            console.log(success, game, players);
         }
     });
 
@@ -75,7 +98,12 @@ const Lobby = ({ game, subscribe }) => {
                         (open)
                     </div>
                 ))}
-            <GameActions isStartDisabled={isStartDisabled} isHost={isHost} leaveGame={leaveGame} />
+            <GameActions
+                isStartDisabled={isStartDisabled}
+                isHost={isHost}
+                startGame={startCrewGame}
+                leaveGame={leaveGame}
+            />
         </div>
     );
 };
