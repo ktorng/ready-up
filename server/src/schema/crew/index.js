@@ -1,7 +1,12 @@
-const { gql } = require('apollo-server');
+const { gql, PubSub, withFilter } = require('apollo-server');
 
 const { generatePlayers, generateMission } = require('../../utils/crew');
+const { matchGameId } = require('../../utils/game');
 
+const pubsub = new PubSub();
+const events = {
+    CREW_GAME_STARTED: 'CREW_GAME_STARTED'
+};
 // TODO: split into separate schema files
 module.exports = {
     schema: gql`
@@ -25,7 +30,7 @@ module.exports = {
             isRocket: Boolean!
             order: Int
         }
-        
+
         type Player {
             userId: ID!
             gameId: ID!
@@ -35,7 +40,7 @@ module.exports = {
         extend type Game {
             gameState: String
         }
-        
+
         extend type GameUpdateResponse {
             players: [Player]
         }
@@ -48,12 +53,22 @@ module.exports = {
             SPECIAL
         }
 
+        extend enum GameType {
+            THE_CREW
+        }
+
         extend type Mutation {
             startCrewGame(gameId: ID!): GameUpdateResponse!
         }
 
-        extend enum GameType {
-            THE_CREW
+        extend type Subscription {
+            crewGameStarted(gameId: ID!): CrewGameStartedPayload
+        }
+
+        type CrewGameStartedPayload {
+            gameId: ID!
+            game: Game!
+            players: [Player]!
         }
     `,
     resolvers: {
@@ -74,7 +89,7 @@ module.exports = {
                 const playerStates = generatePlayers();
 
                 try {
-                    const game = await dataSources.gameAPI.updateGame(
+                    let game = await dataSources.gameAPI.updateGame(
                         {
                             status: 'IN_PROGRESS',
                             gameState: JSON.stringify(gameState)
@@ -91,18 +106,34 @@ module.exports = {
                             )
                         )
                     );
+                    game = game.dataValues;
+                    players = players.map((player) => player.dataValues);
+
+                    // emit event for other players
+                    await pubsub.publish(events.CREW_GAME_STARTED, {
+                        crewGameStarted: { gameId: game.id, game, players }
+                    });
 
                     // return game state and player states
                     return {
                         success: true,
-                        game: game.dataValues,
-                        players: players.map(player => player.dataValues)
+                        game,
+                        players
                     };
                 } catch (e) {
                     console.error(e);
                     return { success: false };
                 }
             }
-        }
-    }
+        },
+        Subscription: {
+            crewGameStarted: {
+                subscribe: withFilter(
+                    () => pubsub.asyncIterator(events.CREW_GAME_STARTED),
+                    (payload, variables) =>
+                        matchGameId(payload.crewGameStarted.gameId, variables.gameId)
+                )
+            }
+        },
+    },
 };

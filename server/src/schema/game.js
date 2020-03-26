@@ -1,5 +1,7 @@
 const { gql, PubSub, withFilter } = require('apollo-server');
-const { get, isEmpty } = require('lodash');
+const { isEmpty } = require('lodash');
+
+const { matchGameId } = require('../utils/game');
 
 const pubsub = new PubSub();
 const events = {
@@ -195,15 +197,13 @@ const resolvers = {
             // subscribe only to matching game id
             subscribe: withFilter(
                 () => pubsub.asyncIterator(events.PLAYER_JOINED),
-                (payload, variables) =>
-                    parseInt(payload.playerJoined.gameId, 10) === parseInt(variables.gameId, 10)
+                (payload, variables) => matchGameId(payload.playerJoined.gameId, variables.gameId)
             )
         },
         playerLeft: {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(events.PLAYER_LEFT),
-                (payload, variables) =>
-                    parseInt(payload.playerLeft.gameId, 10) === parseInt(variables.gameId, 10)
+                (payload, variables) => matchGameId(payload.playerLeft.gameId, variables.gameId)
             )
         }
     }

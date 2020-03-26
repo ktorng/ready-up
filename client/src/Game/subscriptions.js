@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { merge, mergeWith } from 'lodash';
-import { USER_DATA } from '../common/schema';
+import { USER_DATA, GAME_DATA, PLAYER_DATA } from '../common/schema';
 
 const PLAYER_JOINED = gql`
     subscription playerJoined($gameId: ID!) {
@@ -33,6 +33,21 @@ const USER_UPDATED = gql`
         }
     }
     ${USER_DATA}
+`;
+
+const CREW_GAME_STARTED = gql`
+    subscription crewGameStarted($gameId: ID!) {
+        crewGameStarted(gameId: $gameId) {
+            game {
+                ...GameData
+            }
+            players {
+                ...PlayerData
+            }
+        }
+    }
+    ${GAME_DATA}
+    ${PLAYER_DATA}
 `;
 
 export const playerJoined = (gameId) => ({
@@ -83,6 +98,20 @@ export const userUpdated = (gameId, userId) => ({
         nextState.game.users = nextState.game.users.map((user) =>
             user.id === userUpdated.id ? userUpdated : user
         );
+
+        return merge({}, nextState);
+    }
+});
+
+export const crewGameStarted = (gameId) => ({
+    document: CREW_GAME_STARTED,
+    variables: { gameId },
+    updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        console.log(subscriptionData.data)
+
+        const { game, players } = subscriptionData.data.crewGameStarted;
+        const nextState = { ...prev, game, players };
 
         return merge({}, nextState);
     }

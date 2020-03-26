@@ -7,7 +7,7 @@ import { useNavigate } from '@reach/router';
 
 import Player from './Player';
 import GameActions from './GameActions';
-import { USER_DATA, GAME_DATA } from '../common/schema';
+import { USER_DATA } from '../common/schema';
 
 import usePlayerStyles from './usePlayerStyles';
 import useStyles from '../common/useStyles';
@@ -29,24 +29,7 @@ const LEAVE_GAME = gql`
     }
 `;
 
-const START_CREW_GAME = gql`
-    mutation startCrewGame($gameId: ID!) {
-        startCrewGame(gameId: $gameId) {
-            success
-            game {
-                ...GameData
-            }
-            players {
-                userId
-                playerState
-            }
-        }
-    }
-    ${GAME_DATA}
-    ${USER_DATA}
-`;
-
-const Lobby = ({ game, subscribe }) => {
+const Lobby = ({ game, subscribe, startCrewGame }) => {
     const classes = useStyles();
     const playerClasses = usePlayerStyles();
     const { data } = useQuery(GET_CURRENT_USER);
@@ -59,13 +42,6 @@ const Lobby = ({ game, subscribe }) => {
             }
         }
     });
-    const [startCrewGame] = useMutation(START_CREW_GAME, {
-        variables: { gameId: game.id },
-        onCompleted: ({ startCrewGame: { success, game, players } }) => {
-            console.log(success, game, players);
-        }
-    });
-
     const isStartDisabled = game.users.some(user => user.status !== 'READY');
     const isHost = data.me.id === game.hostId;
 
@@ -110,7 +86,8 @@ const Lobby = ({ game, subscribe }) => {
 
 Lobby.propTypes = {
     game: T.object,
-    subscribe: T.func.isRequired
+    subscribe: T.func.isRequired,
+    startCrewGame: T.func.isRequired,
 };
 
 export default Lobby;

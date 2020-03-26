@@ -20,7 +20,7 @@ const dataSources = () => ({
 const context = async ({ req, connection }) => {
     // context for subscriptions
     if (connection) {
-        return connection.context;
+        return { ...connection.context, dataSources: dataSources() };
     }
 
     // simple auth check on every request
