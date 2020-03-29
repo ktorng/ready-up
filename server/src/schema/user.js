@@ -11,6 +11,7 @@ module.exports = {
             email: String!
             status: UserStatus!
             statusMessage: String!
+            playerState: String
         }
 
         extend type Query {

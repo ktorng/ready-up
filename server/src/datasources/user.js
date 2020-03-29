@@ -45,7 +45,10 @@ class UserAPI extends DataSource {
             include: [store.users],
         });
 
-        return players.map(player => this.userReducer(player.user));
+        return players.map(player => ({
+            ...this.userReducer(player.user),
+            playerState: player.dataValues.playerState
+        }));
     }
 
     /**

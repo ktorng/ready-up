@@ -7,6 +7,7 @@ export const USER_DATA = gql`
         name
         status
         statusMessage
+        playerState
     }
 `;
 
@@ -25,11 +26,4 @@ export const GAME_DATA = gql`
         }
     }
     ${USER_DATA}
-`;
-
-export const PLAYER_DATA = gql`
-    fragment PlayerData on Player {
-        userId
-        playerState
-    }
 `;

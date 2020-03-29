@@ -5,9 +5,10 @@ import { useParams } from '@reach/router';
 import { get } from 'lodash';
 
 import Lobby from './Lobby';
+import { Layout } from './Crew';
 import * as gameSubscriptions from './subscriptions';
 import Loading from '../common/Loading';
-import { GAME_DATA, PLAYER_DATA } from '../common/schema';
+import { GAME_DATA } from '../common/schema';
 
 export const GET_GAME = gql`
     query getGame($accessCode: String!) {
@@ -25,13 +26,9 @@ const START_CREW_GAME = gql`
             game {
                 ...GameData
             }
-            players {
-                ...PlayerData
-            }
         }
     }
     ${GAME_DATA}
-    ${PLAYER_DATA}
 `;
 
 const Game = () => {
@@ -41,10 +38,7 @@ const Game = () => {
         fetchPolicy: 'network-only'
     });
     const [startCrewGame] = useMutation(START_CREW_GAME, {
-        variables: { gameId: get(data, 'game.id') },
-        onCompleted: ({ startCrewGame: { success, game, players } }) => {
-            console.log(success, game, players);
-        }
+        variables: { gameId: get(data, 'game.id') }
     });
     // subscribe to game updates
     const subscribe = (userId) => {
@@ -57,6 +51,8 @@ const Game = () => {
     if (loading) return <Loading />;
     if (error) return <p>ERROR</p>;
     if (!data) return <p>Not found</p>;
+    if (data.game.status === 'IN_PROGRESS')
+        return <Layout game={data.game} />;
 
     return <Lobby game={data.game} subscribe={subscribe} startCrewGame={startCrewGame} />;
 };
