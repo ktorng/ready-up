@@ -8,7 +8,16 @@ import Lobby from './Lobby';
 import { Layout } from './Crew';
 import * as gameSubscriptions from './subscriptions';
 import Loading from '../common/Loading';
-import { GAME_DATA } from '../common/schema';
+import { GAME_DATA, USER_DATA } from '../common/schema';
+
+const GET_CURRENT_USER = gql`
+    query me {
+        me @client {
+            ...UserData
+        }
+    }
+    ${USER_DATA}
+`;
 
 export const GET_GAME = gql`
     query getGame($accessCode: String!) {
@@ -37,6 +46,7 @@ const Game = () => {
         variables: { accessCode },
         fetchPolicy: 'network-only'
     });
+    const { data: { me } } = useQuery(GET_CURRENT_USER);
     const [startCrewGame] = useMutation(START_CREW_GAME, {
         variables: { gameId: get(data, 'game.id') }
     });
@@ -52,9 +62,9 @@ const Game = () => {
     if (error) return <p>ERROR</p>;
     if (!data) return <p>Not found</p>;
     if (data.game.status === 'IN_PROGRESS')
-        return <Layout game={data.game} />;
+        return <Layout me={me} game={data.game} />;
 
-    return <Lobby game={data.game} subscribe={subscribe} startCrewGame={startCrewGame} />;
+    return <Lobby me={me} game={data.game} subscribe={subscribe} startCrewGame={startCrewGame} />;
 };
 
 export default Game;

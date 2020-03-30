@@ -26,6 +26,9 @@ const useStyles = makeStyles(_ => ({
     noBorder: {
         border: 'none',
     },
+    stretch: {
+        alignItems: 'stretch',
+    },
 }));
 
 export default useStyles;

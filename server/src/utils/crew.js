@@ -73,6 +73,7 @@ module.exports = {
                 taskReqs.last = 0;
             } else if (taskReqs.ordered) {
                 tasks.ordered.push(card);
+                taskReqs.ordered--;
             } else {
                 tasks.unordered.push(card);
             }
