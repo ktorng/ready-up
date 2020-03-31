@@ -3,6 +3,7 @@ import T from 'prop-types';
 import classNames from 'classnames';
 import { makeStyles } from '@material-ui/core/styles';
 
+import Board from './Board';
 import Player from './Player';
 
 import useStyles from '../../common/useStyles';
@@ -54,7 +55,7 @@ const Layout = ({ me, game }) => {
                         Player Left
                     </div>
                     <div className={layoutClasses.board}>
-                        Board
+                        <Board game={game} />
                     </div>
                     <div className={classNames(layoutClasses.playerVertical)}>
                         Player Right

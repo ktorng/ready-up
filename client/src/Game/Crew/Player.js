@@ -1,28 +1,24 @@
 import React, { useMemo } from 'react';
 import T from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
 
 import Card from './Card';
-
-const usePlayerStyles = makeStyles((_) => ({
-    cardContainer: {
-        display: 'flex',
-        flexDirection: 'row',
-    },
-}));
+import useCrewStyles from './useCrewStyles';
 
 const Player = ({ user }) => {
-    const { id } = user;
-    const { hand } = JSON.parse(user.playerState);
-    const playerClasses = usePlayerStyles();
-    const sortedHand = useMemo(() => sortHand(hand), [hand]);
+    const { id, playerState } = user;
+    const crewClasses = useCrewStyles();
+    const sortedHand = useMemo(() => {
+        const { hand } = JSON.parse(playerState);
+
+        return sortHand(hand);
+    }, [playerState]);
 
     return (
         <div>
             <div>
                 {user.name}
             </div>
-            <div className={playerClasses.cardContainer}>
+            <div className={crewClasses.cardContainer}>
                 {sortedHand.map((card, i) => (
                     <Card
                         key={`player-${id}-card-${i}`}
