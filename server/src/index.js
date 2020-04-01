@@ -1,4 +1,7 @@
-const { ApolloServer } = require('apollo-server');
+const express = require('express');
+const cors = require('cors');
+const http = require('http');
+const { ApolloServer } = require('apollo-server-express');
 const { get } = require('lodash');
 const isEmail = require('isemail');
 
@@ -8,7 +11,12 @@ const store = require('./utils/store');
 const UserAPI = require('./datasources/user');
 const GameAPI = require('./datasources/game');
 
-// creates a sequelize connection once, not for every request
+const app = express();
+app.use(cors());
+
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static('../client/build'));
+}
 
 // set up datasources our resolvers need
 const dataSources = () => ({
@@ -51,7 +59,12 @@ const server = new ApolloServer({
     },
 });
 
-server.listen().then(async ({ url, subscriptionsUrl }) => {
+server.applyMiddleware({ app, path: '/graphql' });
+
+const httpServer = http.createServer(app);
+server.installSubscriptionHandlers(httpServer);
+
+httpServer.listen({ port: 8000 }, async () => {
     try {
         await store.db.authenticate();
         console.log('Connection has been established successfully.');
@@ -59,6 +72,6 @@ server.listen().then(async ({ url, subscriptionsUrl }) => {
         console.error('Unable to connect to the database:', error);
     }
 
-    console.log(`Server ready at ${url}`);
-    console.log(`Subscriptions ready at ${subscriptionsUrl}`);
+    console.log(`Server ready at ${server.graphqlPath}`);
+    console.log(`Subscriptions ready at ${server.subscriptionsPath}`);
 });

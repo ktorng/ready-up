@@ -33,22 +33,30 @@ const authLink = setContext((_, { headers }) => ({
     // get auth token if it exists and return headers to context for httpLink to read
     headers: {
         ...headers,
-        authorization: localStorage.getItem('readyup-token'),
-    },
+        authorization: localStorage.getItem('readyup-token')
+    }
 }));
 
 // http link to graphql
-const httpLink = authLink.concat(new HttpLink({
-    uri: 'http://localhost:4000',
-    credentials: 'same-origin',
-}));
+const httpLink = authLink.concat(
+    new HttpLink({
+        uri:
+            process.env.NODE_ENV === 'production'
+                ? 'https://readyup-crew.herokuapp.com/graphql'
+                : 'http://localhost:8000/graphql',
+        credentials: 'same-origin'
+    })
+);
 
 // websocket link to subscriptions
 const wsLink = new WebSocketLink({
-    uri: 'ws://localhost:4000/subscriptions',
+    uri:
+        process.env.NODE_ENV === 'production'
+            ? 'ws://readyup-crew.herokuapp.com/subscriptions'
+            : 'ws://localhost:8000/subscriptions',
     options: {
-        reconnect: true,
-    },
+        reconnect: true
+    }
 });
 
 // split links to send data to each link based on operation type
@@ -57,8 +65,7 @@ const link = split(
     ({ query }) => {
         const definition = getMainDefinition(query);
 
-        return definition.kind === 'OperationDefinition' &&
-            definition.operation === 'subscription';
+        return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
     },
     wsLink,
     httpLink
@@ -70,22 +77,22 @@ const client = new ApolloClient({
             if (graphQLErrors)
                 graphQLErrors.forEach(({ message, locations, path }) =>
                     console.log(
-                        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
-                    ),
+                        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+                    )
                 );
             if (networkError) console.log(`[Network error]: ${networkError}`);
         }),
-        link,
+        link
     ]),
     cache,
     typeDefs,
-    resolvers,
+    resolvers
 });
 
 cache.writeData({
     data: {
-        isLoggedIn: !!localStorage.getItem('readyup-token'),
-    },
+        isLoggedIn: !!localStorage.getItem('readyup-token')
+    }
 });
 
 // set up persisted client cache
