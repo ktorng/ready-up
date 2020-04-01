@@ -1,19 +1,35 @@
 {
-  "name": "ready-up",
+  "name": "ready-up-server",
   "version": "1.0.0",
-  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
-  "main": "server/src/index.js",
+  "description": "Express and Apollo/GraphQL server for ready-up app",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ktorng/ready-up.git"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bin/reset && nodemon src/index.js",
+    "lint": "eslint --fix ."
   },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ktorng/ready-up/issues"
+  "dependencies": {
+    "apollo-datasource": "^0.7.0",
+    "apollo-server": "^2.10.1",
+    "apollo-server-express": "^2.11.0",
+    "babel-eslint": "^10.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "graphql": "^14.6.0",
+    "graphql-tools": "^4.0.7",
+    "http": "0.0.1-security",
+    "isemail": "^3.2.0",
+    "lodash": "^4.17.15",
+    "nodemon": "^2.0.2",
+    "sequelize": "^5.21.5",
+    "sqlite3": "^4.1.1"
   },
-  "homepage": "https://github.com/ktorng/ready-up#readme"
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^1.19.1"
+  }
 }
