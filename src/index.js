@@ -64,7 +64,7 @@ server.applyMiddleware({ app, path: '/graphql' });
 const httpServer = http.createServer(app);
 server.installSubscriptionHandlers(httpServer);
 
-httpServer.listen({ port: 8000 }, async () => {
+httpServer.listen({ port: process.env.PORT || 8000 }, async () => {
     try {
         await store.db.authenticate();
         console.log('Connection has been established successfully.');
