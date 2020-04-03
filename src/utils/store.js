@@ -7,7 +7,7 @@ const createStore = () => {
         logging: console.log
     });
 
-    const users = db.define('user', {
+    const users = db.define('users', {
         id: {
             type: Sequelize.INTEGER,
             primaryKey: true,
@@ -44,7 +44,7 @@ const createStore = () => {
         },
     });
 
-    const games = db.define('game', {
+    const games = db.define('games', {
         id: {
             type: Sequelize.INTEGER,
             primaryKey: true,
@@ -93,7 +93,7 @@ const createStore = () => {
         gameState: Sequelize.JSON,
     });
 
-    const gameUsers = db.define('game_user', {
+    const gameUsers = db.define('game_users', {
         createdAt: Sequelize.DATE,
         updatedAt: Sequelize.DATE,
         playerState: Sequelize.JSON,
