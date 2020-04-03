@@ -52,7 +52,7 @@ const httpLink = authLink.concat(
 const wsLink = new WebSocketLink({
     uri:
         process.env.NODE_ENV === 'production'
-            ? 'ws://readyup-crew.herokuapp.com/subscriptions'
+            ? 'wss://readyup-crew.herokuapp.com/subscriptions'
             : 'ws://localhost:8000/subscriptions',
     options: {
         reconnect: true
