@@ -15,7 +15,10 @@ const app = express();
 app.use(cors());
 
 if (process.env.NODE_ENV === 'production') {
-    app.use('/*', express.static('client/build'));
+    app.use(express.static('client/build'));
+    app.get('*', function(req, res) {
+        res.sendFile('client/build/index.html', { root: process.cwd() });
+    });
 }
 
 // set up datasources our resolvers need
