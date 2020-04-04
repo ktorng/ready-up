@@ -1,15 +1,13 @@
 const { Sequelize } = require('sequelize');
 
 const createStore = () => {
-    const config = process.env.NODE_ENV === 'production' ? {
-        dialect: 'postgres',
-        host: process.env.DATABASE_URL,
-    } : {
-        dialect: 'sqlite',
-        storage: './store.sqlite',
-        logging: console.log,
-    };
-    const db = new Sequelize(config);
+    const db = process.env.NODE_ENV === 'production' ?
+        new Sequelize(process.env.DATABASE_URL) :
+        new Sequelize({
+            dialect: 'sqlite',
+            storage: './store.sqlite',
+            logging: console.log,
+        });
 
     const users = db.define('users', {
         id: {
