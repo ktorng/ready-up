@@ -67,6 +67,7 @@ server.installSubscriptionHandlers(httpServer);
 httpServer.listen({ port: process.env.PORT || 8000 }, async () => {
     try {
         await store.db.authenticate();
+        await store.db.sync({ force: true });
         console.log('Connection has been established successfully.');
     } catch (error) {
         console.error('Unable to connect to the database:', error);
