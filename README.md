@@ -2,20 +2,26 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Available Scripts
 
-In the project directory, you can run:
+In the root directory, you can run:
+
+### `npm ci`
+
+Installs packages from the package lock file.
 
 ### `npm start`
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Runs the graphql server on http://localhost:8000/graphql and the subscription server on ws://localhost:8000/subscriptions.<br />
+Open [http://localhost:8000/graphql](http://localhost:8000/graphql) for graphql playground.
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+In the client directory, you can run:
 
-### `npm test`
+### `npm ci`
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Installs packages from the package lock file.
+
+### `npm start`
+
+Runs the react app on http://localhost:3000.
 
 ### `npm run build`
 
