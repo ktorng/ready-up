@@ -42,6 +42,12 @@ const useStyles = makeStyles((_) => ({
     grey: {
         color: grey[700],
     },
+    bold: {
+        fontWeight: 'bold',
+    },
+    noMargin: {
+        margin: 0,
+    },
 }));
 
 export default useStyles;

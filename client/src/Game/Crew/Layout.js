@@ -6,6 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Board from './Board';
 import Player from './Player';
 import Header from '../Header';
+import { useTasks } from './useTasks';
 
 import useStyles from '../../common/useStyles';
 
@@ -44,6 +45,8 @@ const Layout = ({ me, game }) => {
     const gameState = useMemo(() => {
         return JSON.parse(game.gameState);
     }, [game.gameState]);
+    const tasks = useTasks(gameState.tasks, game.users.map(user => user.id));
+    console.log(tasks);
 
     // const gameState = JSON.parse(game.gameState);
     const myPlayerIndex = game.users.findIndex(user => user.id === me.id);
@@ -62,7 +65,7 @@ const Layout = ({ me, game }) => {
                         Player Left
                     </div>
                     <div className={layoutClasses.board}>
-                        <Board game={game} />
+                        <Board gameState={gameState} tasks={tasks.unassigned} />
                     </div>
                     <div className={classNames(layoutClasses.playerVertical)}>
                         Player Right

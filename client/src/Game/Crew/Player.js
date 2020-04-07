@@ -1,23 +1,27 @@
 import React, { useMemo } from 'react';
 import T from 'prop-types';
+import classNames from 'classnames';
 
 import Card from './Card';
+import useStyles from '../../common/useStyles';
 import useCrewStyles from './useCrewStyles';
 
 const Player = ({ user }) => {
     const { id, playerState } = user;
+    const classes = useStyles();
     const crewClasses = useCrewStyles();
     const sortedHand = useMemo(() => {
         const { hand } = JSON.parse(playerState);
 
         return sortHand(hand);
     }, [playerState]);
+    console.log(playerState);
 
     return (
         <div>
-            <div>
+            <h4 className={classNames(classes.bold, classes.noMargin)}>
                 {user.name}
-            </div>
+            </h4>
             <div className={crewClasses.cardContainer}>
                 {sortedHand.map((card, i) => (
                     <Card

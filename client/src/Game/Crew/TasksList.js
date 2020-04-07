@@ -4,12 +4,12 @@ import T from 'prop-types';
 import useCrewStyles from './useCrewStyles';
 import Card from './Card';
 
-const AssignTasks = ({ tasks }) => {
+const TasksList = ({ tasks, title }) => {
     const crewClasses = useCrewStyles();
 
     return (
         <div>
-            Assign tasks
+            {title}
             <div className={crewClasses.cardContainer}>
                 {[
                     ...(tasks.first ? (
@@ -39,13 +39,14 @@ const AssignTasks = ({ tasks }) => {
     );
 };
 
-AssignTasks.propTypes = {
+TasksList.propTypes = {
     tasks: T.shape({
         ordered: T.array,
         unordered: T.array,
         first: T.object,
         last: T.object
-    })
+    }),
+    title: T.string,
 };
 
-export default AssignTasks;
+export default TasksList;

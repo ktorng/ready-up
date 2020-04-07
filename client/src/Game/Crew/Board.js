@@ -1,20 +1,15 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import T from 'prop-types';
 
-import AssignTasks from './AssignTasks';
+import TasksList from './TasksList';
 
-const Board = ({ game }) => {
-    console.log(game);
-    const { gameState } = game;
-    const { tasks, turn } = useMemo(() => {
-        return JSON.parse(gameState);
-    }, [gameState]);
-    console.log(tasks);
+const Board = ({ gameState, tasks }) => {
+    const { turn } = gameState;
 
     return (
         <div>
             {!turn ? (
-                <AssignTasks tasks={tasks} />
+                <TasksList tasks={tasks} title="Assign Tasks" />
             ) : (
                 'Game in progress'
             )}
@@ -23,7 +18,8 @@ const Board = ({ game }) => {
 };
 
 Board.propTypes = {
-    game: T.object.isRequired
+    gameState: T.object.isRequired,
+    tasks: T.object, // unassigned tasks
 };
 
 export default Board;
