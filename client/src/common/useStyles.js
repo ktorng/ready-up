@@ -15,6 +15,9 @@ const useStyles = makeStyles(_ => ({
         flexDirection: 'column',
         alignItems: 'center',
     },
+    flexRow: {
+        flexDirection: 'row',
+    },
     linkPlain: {
         textDecoration: 'none',
         color: 'white',
@@ -29,6 +32,12 @@ const useStyles = makeStyles(_ => ({
     stretch: {
         alignItems: 'stretch',
     },
+    pointer: {
+        cursor: 'pointer',
+    },
+    marginLeft8: {
+        marginLeft: 8
+    }
 }));
 
 export default useStyles;

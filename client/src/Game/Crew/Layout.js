@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import Board from './Board';
 import Player from './Player';
+import Header from '../Header';
 
 import useStyles from '../../common/useStyles';
 
@@ -45,7 +46,9 @@ const Layout = ({ me, game }) => {
 
     return (
         <div className={classNames(classes.containerCenter, classes.stretch)}>
-            <div className={classes.containerCenter}>Header</div>
+            <div className={classes.containerCenter}>
+                <Header game={game} />
+            </div>
             <div className={layoutClasses.game}>
                 <div className={classNames(layoutClasses.playerTop, layoutClasses.border)}>
                     Player Top

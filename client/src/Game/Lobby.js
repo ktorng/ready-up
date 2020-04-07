@@ -5,6 +5,7 @@ import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 import { useNavigate } from '@reach/router';
 
+import Header from './Header';
 import Player from './Player';
 import GameActions from './GameActions';
 
@@ -43,8 +44,7 @@ const Lobby = ({ me, game, subscribe, startCrewGame }) => {
 
     return (
         <div className={classes.containerCenter}>
-            <h1>Game lobby: {game.name}</h1>
-            <h3>Access code: {game.accessCode}</h3>
+            <Header game={game} showAccessCode />
             <div className={classNames(playerClasses.player, playerClasses.header)}>
                 <div className={playerClasses.name}>Name</div>
                 <div className={playerClasses.ready}>Ready</div>
