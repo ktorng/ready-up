@@ -1,12 +1,15 @@
 import React, { useMemo } from 'react';
 import T from 'prop-types';
 import classNames from 'classnames';
+import { isEmpty } from 'lodash';
 
 import Card from './Card';
+import TasksList from './TasksList';
+
 import useStyles from '../../common/useStyles';
 import useCrewStyles from './useCrewStyles';
 
-const Player = ({ user }) => {
+const Player = ({ user, tasks }) => {
     const { id, playerState } = user;
     const classes = useStyles();
     const crewClasses = useCrewStyles();
@@ -15,7 +18,9 @@ const Player = ({ user }) => {
 
         return sortHand(hand);
     }, [playerState]);
-    console.log(playerState);
+    const hasTasks = useMemo(() => {
+        return Object.keys(tasks).some((type) => !isEmpty(tasks[type]));
+    }, [tasks]);
 
     return (
         <div>
@@ -30,12 +35,16 @@ const Player = ({ user }) => {
                     />
                 ))}
             </div>
+            {hasTasks && (
+                <TasksList tasks={tasks} title="Tasks to complete" />
+            )}
         </div>
     );
 };
 
 Player.propTypes = {
     user: T.object,
+    tasks: T.object,
 };
 
 

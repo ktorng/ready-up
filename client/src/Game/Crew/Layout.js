@@ -50,6 +50,7 @@ const Layout = ({ me, game }) => {
 
     // const gameState = JSON.parse(game.gameState);
     const myPlayerIndex = game.users.findIndex(user => user.id === me.id);
+    const currentUser = game.users[myPlayerIndex];
 
     return (
         <div className={classNames(classes.containerCenter, classes.stretch)}>
@@ -72,7 +73,7 @@ const Layout = ({ me, game }) => {
                     </div>
                 </div>
                 <div className={classNames(layoutClasses.player, layoutClasses.border)}>
-                    <Player user={game.users[myPlayerIndex]} />
+                    <Player user={currentUser} tasks={tasks[currentUser.id]} />
                 </div>
             </div>
         </div>

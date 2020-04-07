@@ -1,15 +1,21 @@
 import React from 'react';
 import T from 'prop-types';
+import classNames from 'classnames';
 
-import useCrewStyles from './useCrewStyles';
 import Card from './Card';
 
+import useCrewStyles from './useCrewStyles';
+import useStyles from '../../common/useStyles';
+
 const TasksList = ({ tasks, title }) => {
+    const classes = useStyles();
     const crewClasses = useCrewStyles();
 
     return (
         <div>
-            {title}
+            <h5 className={classNames(classes.bold, classes.noMargin)}>
+                {title}
+            </h5>
             <div className={crewClasses.cardContainer}>
                 {[
                     ...(tasks.first ? (

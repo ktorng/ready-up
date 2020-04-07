@@ -11,8 +11,8 @@ import grey from '@material-ui/core/colors/grey';
 
 const useCardStyles = makeStyles((_) => ({
     card: {
-        width: 40,
-        height: 60,
+        width: 30,
+        height: 45,
         border: '1px solid #ececec',
         display: 'flex',
     },
