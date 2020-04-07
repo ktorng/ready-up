@@ -1,6 +1,7 @@
+import grey from '@material-ui/core/colors/grey';
 import { makeStyles } from '@material-ui/core/styles';
 
-const useStyles = makeStyles(_ => ({
+const useStyles = makeStyles((_) => ({
     textField: {
         display: 'block',
     },
@@ -36,8 +37,11 @@ const useStyles = makeStyles(_ => ({
         cursor: 'pointer',
     },
     marginLeft8: {
-        marginLeft: 8
-    }
+        marginLeft: 8,
+    },
+    grey: {
+        color: grey[700],
+    },
 }));
 
 export default useStyles;

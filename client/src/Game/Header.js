@@ -6,7 +6,18 @@ import copy from 'copy-to-clipboard';
 import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
 import useStyles from '../common/useStyles';
 
-const Header = ({ game, showAccessCode }) => {
+const getStatus = (game, gameState) => {
+    if (game.status === 'WAITING') {
+        return 'Waiting for players...';
+    }
+    if (gameState.turn === 0) {
+        return 'Assigning Tasks...';
+    }
+
+    return `Turn: ${gameState.turn}`;
+};
+
+const Header = ({ game, showAccessCode, gameState }) => {
     const classes = useStyles();
     const location = useLocation();
 
@@ -25,6 +36,7 @@ const Header = ({ game, showAccessCode }) => {
                     </div>
                 </h3>
             )}
+            <h3 className={classes.grey}>{getStatus(game, gameState)}</h3>
         </>
     );
 };
@@ -32,6 +44,7 @@ const Header = ({ game, showAccessCode }) => {
 Header.propTypes = {
     game: T.object.isRequired,
     showAccessCode: T.bool,
+    gameState: T.object,
 };
 
 export default Header;

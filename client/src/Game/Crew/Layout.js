@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import T from 'prop-types';
 import classNames from 'classnames';
 import { makeStyles } from '@material-ui/core/styles';
@@ -41,13 +41,17 @@ const Layout = ({ me, game }) => {
     const classes = useStyles();
     const layoutClasses = useLayoutStyles();
 
+    const gameState = useMemo(() => {
+        return JSON.parse(game.gameState);
+    }, [game.gameState]);
+
     // const gameState = JSON.parse(game.gameState);
     const myPlayerIndex = game.users.findIndex(user => user.id === me.id);
 
     return (
         <div className={classNames(classes.containerCenter, classes.stretch)}>
             <div className={classes.containerCenter}>
-                <Header game={game} />
+                <Header game={game} gameState={gameState} />
             </div>
             <div className={layoutClasses.game}>
                 <div className={classNames(layoutClasses.playerTop, layoutClasses.border)}>
