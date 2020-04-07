@@ -43,7 +43,7 @@ const context = async ({ req, connection }) => {
         return { user: null };
     }
 
-    const users = await store.users.findOrCreate({ where: { email }});
+    const users = await store.users.findOrCreate({ where: { email } });
     const user = get(users, 0);
 
     return {
