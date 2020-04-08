@@ -1,37 +1,52 @@
 import React, { useMemo } from 'react';
 import T from 'prop-types';
+import classNames from 'classnames';
+import { isEmpty } from 'lodash';
 
 import Card from './Card';
+import TasksList from './TasksList';
+
+import useStyles from '../../common/useStyles';
 import useCrewStyles from './useCrewStyles';
 
-const Player = ({ user }) => {
+const Player = ({ user, tasks, isCurrent = false }) => {
     const { id, playerState } = user;
+    const classes = useStyles();
     const crewClasses = useCrewStyles();
     const sortedHand = useMemo(() => {
         const { hand } = JSON.parse(playerState);
 
         return sortHand(hand);
     }, [playerState]);
+    const hasTasks = useMemo(() => {
+        return Object.keys(tasks).some((type) => !isEmpty(tasks[type]));
+    }, [tasks]);
 
     return (
-        <div>
-            <div>
+        <div className={crewClasses.playerContainer}>
+            <h4 className={classNames(classes.bold, classes.noMargin)}>
                 {user.name}
-            </div>
+            </h4>
             <div className={crewClasses.cardContainer}>
                 {sortedHand.map((card, i) => (
                     <Card
                         key={`player-${id}-card-${i}`}
                         card={card}
+                        isCurrent={isCurrent}
                     />
                 ))}
             </div>
+            {hasTasks && (
+                <TasksList tasks={tasks} title="Tasks to complete" />
+            )}
         </div>
     );
 };
 
 Player.propTypes = {
     user: T.object,
+    tasks: T.object,
+    isCurrent: T.bool,
 };
 
 

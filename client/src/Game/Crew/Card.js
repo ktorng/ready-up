@@ -11,10 +11,15 @@ import grey from '@material-ui/core/colors/grey';
 
 const useCardStyles = makeStyles((_) => ({
     card: {
-        width: 40,
-        height: 60,
+        width: 20,
+        height: 30,
         border: '1px solid #ececec',
         display: 'flex',
+        backgroundColor: grey[500],
+    },
+    current: {
+        width: 30,
+        height: 45,
     },
     R: {
         backgroundColor: red[700],
@@ -42,26 +47,35 @@ const useCardStyles = makeStyles((_) => ({
     },
     task: {
         cursor: 'pointer',
+        width: 30,
+        height: 45,
     },
 }));
 
-const Card = ({ card, isTask = false, taskReq = {}, handleClick }) => {
+const Card = ({ card, isTask = false, taskReq = {}, handleClick, isCurrent }) => {
     const [isHover, setHover] = useState(false);
     const cardClasses = useCardStyles();
     const { tooltip, symbol } = getTaskProps(taskReq);
+    const shouldShow = isCurrent || isTask;
 
     return (
         <div
-            className={classNames(cardClasses.card, cardClasses[card.color], {
-                [cardClasses.hover]: isHover,
-                [cardClasses.task]: isTask
+            className={classNames(cardClasses.card, {
+                [cardClasses.hover]: shouldShow && isHover,
+                [cardClasses.task]: isTask,
+                [cardClasses.current]: isCurrent,
+                [cardClasses[card.color]]: shouldShow
             })}
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
-            title={isTask ? tooltip: ''}
+            title={isTask ? tooltip : ''}
         >
-            <div>{card.number}</div>
-            {isTask && <div className={cardClasses.taskSymbol}>{symbol}</div>}
+            {shouldShow && (
+                <>
+                    <div>{card.number}</div>
+                    {isTask && <div className={cardClasses.taskSymbol}>{symbol}</div>}
+                </>
+            )}
         </div>
     );
 };
@@ -69,15 +83,16 @@ const Card = ({ card, isTask = false, taskReq = {}, handleClick }) => {
 Card.propTypes = {
     card: T.shape({
         number: T.number.isRequired,
-        color: T.string.isRequired
+        color: T.string.isRequired,
     }),
     isTask: T.bool,
     taskReq: T.shape({
         isFirst: T.bool,
         order: T.number,
-        isLast: T.bool
+        isLast: T.bool,
     }),
-    handleClick: T.func
+    handleClick: T.func,
+    isCurrent: T.bool,
 };
 
 function getTaskProps(taskReq) {

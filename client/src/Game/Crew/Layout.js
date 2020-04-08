@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import T from 'prop-types';
 import classNames from 'classnames';
 import { makeStyles } from '@material-ui/core/styles';
 
 import Board from './Board';
 import Player from './Player';
+import Header from '../Header';
+import { useTasks } from './useTasks';
+import { usePlayers } from './usePlayers';
 
 import useStyles from '../../common/useStyles';
 
@@ -19,12 +22,17 @@ const useLayoutStyles = makeStyles((_) => ({
     },
     board: {
         flex: 1,
+        display: 'flex',
+        flexWrap: 'wrap',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     player: {
         height: 120,
     },
     playerTop: {
-        height: 60,
+        height: 90,
     },
     playerVertical: {
         width: 60,
@@ -40,29 +48,55 @@ const Layout = ({ me, game }) => {
     const classes = useStyles();
     const layoutClasses = useLayoutStyles();
 
-    // const gameState = JSON.parse(game.gameState);
-    const myPlayerIndex = game.users.findIndex(user => user.id === me.id);
+    const gameState = useMemo(() => {
+        return JSON.parse(game.gameState);
+    }, [game.gameState]);
+    // build dict of tasks by user id
+    const tasks = useTasks(gameState.tasks, game.users.map(user => user.id));
+    // build ordered list of players
+    const players = usePlayers(game.users, me);
 
     return (
         <div className={classNames(classes.containerCenter, classes.stretch)}>
-            <div className={classes.containerCenter}>Header</div>
+            <div className={classes.containerCenter}>
+                <Header game={game} gameState={gameState} />
+            </div>
             <div className={layoutClasses.game}>
                 <div className={classNames(layoutClasses.playerTop, layoutClasses.border)}>
-                    Player Top
+                    {players[2] && (
+                        <Player
+                            user={players[2]}
+                            tasks={tasks[players[2].id]}
+                        />
+                    )}
                 </div>
                 <div className={layoutClasses.mid}>
                     <div className={classNames(layoutClasses.playerVertical)}>
-                        Player Left
+                        {players[1] && (
+                            <Player
+                                user={players[1]}
+                                tasks={tasks[players[1].id]}
+                            />
+                        )}
                     </div>
                     <div className={layoutClasses.board}>
-                        <Board game={game} />
+                        <Board gameState={gameState} tasks={tasks.unassigned} />
                     </div>
                     <div className={classNames(layoutClasses.playerVertical)}>
-                        Player Right
+                        {players[3] && (
+                            <Player
+                                user={players[3]}
+                                tasks={tasks[players[3].id]}
+                            />
+                        )}
                     </div>
                 </div>
                 <div className={classNames(layoutClasses.player, layoutClasses.border)}>
-                    <Player user={game.users[myPlayerIndex]} />
+                    <Player
+                        user={players[0]}
+                        tasks={tasks[players[0].id]}
+                        isCurrent
+                    />
                 </div>
             </div>
         </div>

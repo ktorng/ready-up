@@ -1,15 +1,21 @@
 import React from 'react';
 import T from 'prop-types';
+import classNames from 'classnames';
 
-import useCrewStyles from './useCrewStyles';
 import Card from './Card';
 
-const AssignTasks = ({ tasks }) => {
+import useCrewStyles from './useCrewStyles';
+import useStyles from '../../common/useStyles';
+
+const TasksList = ({ tasks, title }) => {
+    const classes = useStyles();
     const crewClasses = useCrewStyles();
 
     return (
-        <div>
-            Assign tasks
+        <div className={crewClasses.playerContainer}>
+            <h5 className={classNames(classes.bold, classes.noMargin)}>
+                {title}
+            </h5>
             <div className={crewClasses.cardContainer}>
                 {[
                     ...(tasks.first ? (
@@ -39,13 +45,14 @@ const AssignTasks = ({ tasks }) => {
     );
 };
 
-AssignTasks.propTypes = {
+TasksList.propTypes = {
     tasks: T.shape({
         ordered: T.array,
         unordered: T.array,
         first: T.object,
         last: T.object
-    })
+    }),
+    title: T.string,
 };
 
-export default AssignTasks;
+export default TasksList;
