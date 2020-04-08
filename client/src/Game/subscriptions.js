@@ -61,11 +61,11 @@ export const playerJoined = (gameId) => ({
     }
 });
 
-export const playerLeft = (gameId) => ({
+export const playerLeft = (gameId, origUserId) => ({
     document: PLAYER_LEFT,
     variables: { gameId },
     updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData.data) return prev;
+        if (!subscriptionData.data || subscriptionData.data.playerLeft.userId === origUserId) return prev;
 
         const { isDeleted, userId, hostId } = subscriptionData.data.playerLeft;
 

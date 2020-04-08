@@ -9,7 +9,7 @@ import TasksList from './TasksList';
 import useStyles from '../../common/useStyles';
 import useCrewStyles from './useCrewStyles';
 
-const Player = ({ user, tasks }) => {
+const Player = ({ user, tasks, isCurrent = false }) => {
     const { id, playerState } = user;
     const classes = useStyles();
     const crewClasses = useCrewStyles();
@@ -45,6 +45,7 @@ const Player = ({ user, tasks }) => {
 Player.propTypes = {
     user: T.object,
     tasks: T.object,
+    isCurrent: T.bool.isRequired,
 };
 
 

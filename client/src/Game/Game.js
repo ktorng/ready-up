@@ -53,7 +53,7 @@ const Game = () => {
     // subscribe to game updates
     const subscribe = (userId) => {
         subscribeToMore(gameSubscriptions.playerJoined(data.game.id));
-        subscribeToMore(gameSubscriptions.playerLeft(data.game.id));
+        subscribeToMore(gameSubscriptions.playerLeft(data.game.id, userId));
         subscribeToMore(gameSubscriptions.userUpdated(data.game.id, userId));
         subscribeToMore(gameSubscriptions.crewGameStarted(data.game.id));
     };

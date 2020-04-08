@@ -27,6 +27,7 @@ const Lobby = ({ me, game, subscribe, startCrewGame }) => {
     const [leaveGame] = useMutation(LEAVE_GAME, {
         variables: { gameId: game.id },
         onCompleted: ({ leaveGame: { success } }) => {
+            console.log(success)
             if (success) {
                 navigate('/');
             }

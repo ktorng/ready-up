@@ -73,7 +73,11 @@ const Layout = ({ me, game }) => {
                     </div>
                 </div>
                 <div className={classNames(layoutClasses.player, layoutClasses.border)}>
-                    <Player user={currentUser} tasks={tasks[currentUser.id]} />
+                    <Player
+                        user={currentUser}
+                        tasks={tasks[currentUser.id]}
+                        isCurrent
+                    />
                 </div>
             </div>
         </div>
