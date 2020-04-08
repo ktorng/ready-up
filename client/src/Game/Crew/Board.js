@@ -3,11 +3,14 @@ import T from 'prop-types';
 
 import TasksList from './TasksList';
 
+import useCrewStyles from './useCrewStyles';
+
 const Board = ({ gameState, tasks }) => {
+    const crewClasses = useCrewStyles();
     const { turn } = gameState;
 
     return (
-        <div>
+        <div className={crewClasses.boardContainer}>
             {!turn ? (
                 <TasksList tasks={tasks} title="Assign Tasks" />
             ) : (

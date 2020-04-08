@@ -23,7 +23,7 @@ const Player = ({ user, tasks, isCurrent = false }) => {
     }, [tasks]);
 
     return (
-        <div>
+        <div className={crewClasses.playerContainer}>
             <h4 className={classNames(classes.bold, classes.noMargin)}>
                 {user.name}
             </h4>
@@ -32,6 +32,7 @@ const Player = ({ user, tasks, isCurrent = false }) => {
                     <Card
                         key={`player-${id}-card-${i}`}
                         card={card}
+                        isCurrent={isCurrent}
                     />
                 ))}
             </div>
@@ -45,7 +46,7 @@ const Player = ({ user, tasks, isCurrent = false }) => {
 Player.propTypes = {
     user: T.object,
     tasks: T.object,
-    isCurrent: T.bool.isRequired,
+    isCurrent: T.bool,
 };
 
 

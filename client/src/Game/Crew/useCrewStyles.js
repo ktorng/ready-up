@@ -3,7 +3,14 @@ import { makeStyles } from '@material-ui/core/styles';
 const useCrewStyles = makeStyles((_) => ({
     cardContainer: {
         display: 'flex',
-        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+    },
+    playerContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        flexWrap: 'wrap',
+        alignItems: 'center',
     },
 }));
 

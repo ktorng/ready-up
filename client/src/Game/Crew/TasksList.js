@@ -12,7 +12,7 @@ const TasksList = ({ tasks, title }) => {
     const crewClasses = useCrewStyles();
 
     return (
-        <div>
+        <div className={crewClasses.playerContainer}>
             <h5 className={classNames(classes.bold, classes.noMargin)}>
                 {title}
             </h5>
