@@ -69,6 +69,7 @@ const Card = ({ card, isTask = false, taskReq = {}, handleClick, isCurrent }) =>
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
             title={isTask ? tooltip : ''}
+            onClick={() => handleClick(card)}
         >
             {shouldShow && (
                 <>

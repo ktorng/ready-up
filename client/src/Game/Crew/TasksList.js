@@ -7,7 +7,7 @@ import Card from './Card';
 import useCrewStyles from './useCrewStyles';
 import useStyles from '../../common/useStyles';
 
-const TasksList = ({ tasks, title }) => {
+const TasksList = ({ tasks, title, handleClickCard }) => {
     const classes = useStyles();
     const crewClasses = useCrewStyles();
 
@@ -19,7 +19,7 @@ const TasksList = ({ tasks, title }) => {
             <div className={crewClasses.cardContainer}>
                 {[
                     ...(tasks.first ? (
-                        <Card card={tasks.first} isTask taskReq={{ isFirst: true }} />
+                        <Card card={tasks.first} isTask taskReq={{ isFirst: true }} handleClick={handleClickCard} />
                     ) : (
                         []
                     )),
@@ -29,15 +29,16 @@ const TasksList = ({ tasks, title }) => {
                             card={task}
                             isTask
                             taskReq={{ order: i + 1 }}
+                            handleClick={handleClickCard}
                         />
                     )),
                     ...(tasks.last ? (
-                        <Card card={tasks.last} isTask taskReq={{ isLast: true }} />
+                        <Card card={tasks.last} isTask taskReq={{ isLast: true }} handleClick={handleClickCard} />
                     ) : (
                         []
                     )),
                     ...tasks.unordered.map((task, i) => (
-                        <Card key={`task-unordered=${i}`} card={task} isTask />
+                        <Card key={`task-unordered=${i}`} card={task} isTask handleClick={handleClickCard} />
                     ))
                 ]}
             </div>
@@ -53,6 +54,7 @@ TasksList.propTypes = {
         last: T.object
     }),
     title: T.string,
+    handleClickCard: T.func,
 };
 
 export default TasksList;
