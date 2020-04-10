@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import T from 'prop-types';
 import classNames from 'classnames';
-import { isEmpty } from 'lodash';
 import { makeStyles } from '@material-ui/core/styles';
 import red from '@material-ui/core/colors/red';
 import blue from '@material-ui/core/colors/blue';
@@ -41,18 +40,18 @@ const useCardStyles = makeStyles((_) => ({
     },
     hover: {
         border: '1px solid black',
+        cursor: 'pointer',
     },
     taskSymbol: {
         alignSelf: 'flex-end',
     },
     task: {
-        cursor: 'pointer',
         width: 30,
         height: 45,
     },
 }));
 
-const Card = ({ card, isTask = false, taskReq = {}, handleClick, isCurrent }) => {
+const Card = ({ card, isTask = false, taskReq = {}, handleClick, isCurrent, hideHover = false }) => {
     const [isHover, setHover] = useState(false);
     const cardClasses = useCardStyles();
     const { tooltip, symbol } = getTaskProps(taskReq);
@@ -61,7 +60,7 @@ const Card = ({ card, isTask = false, taskReq = {}, handleClick, isCurrent }) =>
     return (
         <div
             className={classNames(cardClasses.card, {
-                [cardClasses.hover]: shouldShow && isHover,
+                [cardClasses.hover]: shouldShow && isHover && !hideHover,
                 [cardClasses.task]: isTask,
                 [cardClasses.current]: isCurrent,
                 [cardClasses[card.color]]: shouldShow
@@ -69,6 +68,7 @@ const Card = ({ card, isTask = false, taskReq = {}, handleClick, isCurrent }) =>
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
             title={isTask ? tooltip : ''}
+            {...(handleClick ? { onClick: () => handleClick(card, taskReq)} : {})}
         >
             {shouldShow && (
                 <>
@@ -93,10 +93,10 @@ Card.propTypes = {
     }),
     handleClick: T.func,
     isCurrent: T.bool,
+    hideHover: T.bool,
 };
 
 function getTaskProps(taskReq) {
-    if (isEmpty(taskReq)) return {};
     const props = { symbol: '' };
 
     if (taskReq.isFirst) {
