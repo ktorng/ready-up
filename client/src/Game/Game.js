@@ -8,7 +8,7 @@ import Lobby from './Lobby';
 import { Layout } from './Crew';
 import * as gameSubscriptions from './subscriptions';
 import Loading from '../common/Loading';
-import { GAME_DATA, USER_DATA } from '../common/schema';
+import { GAME_DATA, USER_DATA } from '../common/fragments';
 
 const GET_CURRENT_USER = gql`
     query me {
@@ -42,29 +42,43 @@ const START_CREW_GAME = gql`
 
 const Game = () => {
     const { accessCode } = useParams();
-    const { data, loading, error, subscribeToMore } = useQuery(GET_GAME, {
+    const { data: gameData, loading, error, subscribeToMore } = useQuery(GET_GAME, {
         variables: { accessCode },
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
     });
-    const { data: { me } } = useQuery(GET_CURRENT_USER);
+    const {
+        data: { me },
+    } = useQuery(GET_CURRENT_USER);
     const [startCrewGame] = useMutation(START_CREW_GAME, {
-        variables: { gameId: get(data, 'game.id') }
+        variables: { gameId: get(gameData, 'game.id') },
     });
+
     // subscribe to game updates
     const subscribe = (userId) => {
-        subscribeToMore(gameSubscriptions.playerJoined(data.game.id));
-        subscribeToMore(gameSubscriptions.playerLeft(data.game.id, userId));
-        subscribeToMore(gameSubscriptions.userUpdated(data.game.id, userId));
-        subscribeToMore(gameSubscriptions.crewGameStarted(data.game.id));
+        subscribeToMore(gameSubscriptions.playerJoined(gameData.game.id));
+        subscribeToMore(gameSubscriptions.playerLeft(gameData.game.id, userId));
+        subscribeToMore(gameSubscriptions.userUpdated(gameData.game.id, userId));
+        subscribeToMore(gameSubscriptions.crewGameStarted(gameData.game.id));
     };
 
     if (loading) return <Loading />;
     if (error) return <p>ERROR</p>;
-    if (!data) return <p>Not found</p>;
-    if (data.game.status === 'IN_PROGRESS')
-        return <Layout me={me} game={data.game} />;
+    if (!gameData) return <p>Not found</p>;
 
-    return <Lobby me={me} game={data.game} subscribe={subscribe} startCrewGame={startCrewGame} />;
+    const player = gameData.game.players.find((p) => p.userId === me.id);
+
+    if (gameData.game.status === 'IN_PROGRESS')
+        return <Layout me={me} player={player} game={gameData.game} />;
+
+    return (
+        <Lobby
+            me={me}
+            player={player}
+            game={gameData.game}
+            subscribe={subscribe}
+            startCrewGame={startCrewGame}
+        />
+    );
 };
 
 export default Game;

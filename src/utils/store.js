@@ -27,15 +27,6 @@ const createStore = () => {
             allowNull: false,
             unique: true,
         },
-        status: {
-            type: Sequelize.STRING,
-            defaultValue: 'WAITING'
-        },
-        statusMessage: {
-            type: Sequelize.STRING,
-            allowNull: false,
-            defaultValue: ''
-        },
     }, {
         hooks: {
             beforeCreate: (user) => {
@@ -99,6 +90,15 @@ const createStore = () => {
         createdAt: Sequelize.DATE,
         updatedAt: Sequelize.DATE,
         playerState: Sequelize.JSON,
+        status: {
+            type: Sequelize.STRING,
+            defaultValue: 'WAITING'
+        },
+        statusMessage: {
+            type: Sequelize.STRING,
+            allowNull: false,
+            defaultValue: ''
+        },
     });
     gameUsers.belongsTo(users);
     gameUsers.belongsTo(games);

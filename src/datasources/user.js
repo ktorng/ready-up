@@ -1,6 +1,5 @@
 const { DataSource } = require('apollo-datasource');
 const { get, pick } = require('lodash');
-const { Sequelize } = require('sequelize');
 const isEmail = require('isemail');
 
 const store = require('../utils/store');
@@ -33,22 +32,37 @@ class UserAPI extends DataSource {
 
         await this.store.users.upsert({ name, email }, { returning: true });
 
-        return this.store.users.findOne({ where: { email } })
+        const user = await this.store.users.findOne({ where: { email } });
+
+        return user && this.userReducer(user);
     }
 
     /**
-     * Gets user records queried by list of userIds
+     * Gets gameUser records queried by gameId
      */
-    async getPlayers(gameId) {
+    // TODO: cleanup
+    // async getPlayers(gameId) {
+    //     const players = await this.store.gameUsers.findAll({
+    //         where: { gameId },
+    //         include: [store.users],
+    //     });
+    //
+    //     return players.map(player => ({
+    //         ...this.userReducer(player.user),
+    //         ...this.playerReducer(player),
+    //         userId: player.user.id,
+    //     }));
+    // }
+
+    /**
+     * Gets players (gameUser join records) queried by options
+     */
+    async getPlayers(options) {
         const players = await this.store.gameUsers.findAll({
-            where: { gameId },
-            include: [store.users],
+            where: options,
         });
 
-        return players.map(player => ({
-            ...this.userReducer(player.user),
-            playerState: player.dataValues.playerState
-        }));
+        return players.map(this.playerReducer);
     }
 
     /**
@@ -74,9 +88,17 @@ class UserAPI extends DataSource {
             'id',
             'email',
             'name',
+        ]);
+    }
+
+    playerReducer(player) {
+        return pick(player, [
+            'id',
+            'userId',
+            'gameId',
             'status',
             'statusMessage',
-            'playerState'
+            'playerState',
         ]);
     }
 }

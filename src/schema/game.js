@@ -18,7 +18,7 @@ const schema = gql`
         name: String!
         description: String!
         size: Int!
-        users: [User]
+        players: [Player]! # list of player objects associated with this game id
     }
 
     extend type Query {
@@ -77,10 +77,9 @@ const schema = gql`
 
 const resolvers = {
     Game: {
-        // get users in a game using the root object's id (game id)
-        users: async ({ id }, _, { dataSources }) => {
-            // console.log(await dataSources.userAPI.getPlayers(id));
-            return dataSources.userAPI.getPlayers(id);
+        // get associated player objects by using the root object's id (game id)
+        players: async ({ id }, _, { dataSources }) => {
+            return dataSources.userAPI.getPlayers({ gameId: id });
         }
     },
     Query: {

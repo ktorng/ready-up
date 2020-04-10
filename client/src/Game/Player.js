@@ -6,7 +6,7 @@ import { useMutation, useQuery } from '@apollo/react-hooks';
 
 import PlayerReady from './PlayerReady';
 import usePlayerStyles from './usePlayerStyles';
-import { USER_DATA } from '../common/schema';
+import { USER_DATA } from '../common/fragments';
 
 const GET_USER = gql`
     query getUser($userId: ID!) {
@@ -18,7 +18,7 @@ const GET_USER = gql`
 `;
 
 const UPDATE_USER = gql`
-    mutation updateUser($userId: ID!, $gameId: ID!, $status: UserStatus, $statusMessage: String) {
+    mutation updatePlayer($userId: ID!, $gameId: ID!, $status: UserStatus, $statusMessage: String) {
         updateUser(userId: $userId, gameId: $gameId, status: $status, statusMessage: $statusMessage) {
             success,
             user {

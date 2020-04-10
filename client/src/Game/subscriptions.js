@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { merge, mergeWith } from 'lodash';
-import { USER_DATA, GAME_DATA } from '../common/schema';
+import { USER_DATA, GAME_DATA } from '../common/fragments';
 
 const PLAYER_JOINED = gql`
     subscription playerJoined($gameId: ID!) {

@@ -1,14 +1,26 @@
 import gql from 'graphql-tag';
 
+export const PLAYER_DATA = gql`
+    fragment PlayerData on Player {
+        id
+        userId
+        gameId
+        status
+        statusMessage
+        playerState
+    }
+`;
+
 export const USER_DATA = gql`
     fragment UserData on User {
         id
         email
         name
-        status
-        statusMessage
-        playerState
+        players {
+            ...PlayerData
+        }
     }
+    ${PLAYER_DATA}
 `;
 
 export const GAME_DATA = gql`
@@ -21,9 +33,9 @@ export const GAME_DATA = gql`
         description
         size
         gameState
-        users {
-            ...UserData
+        players {
+            ...PlayerData
         }
     }
-    ${USER_DATA}
+    ${PLAYER_DATA}
 `;

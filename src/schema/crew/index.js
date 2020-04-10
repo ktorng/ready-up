@@ -31,12 +31,6 @@ module.exports = {
             order: Int
         }
 
-        type Player {
-            userId: ID!
-            gameId: ID!
-            playerState: String
-        }
-
         extend type Game {
             gameState: String
         }

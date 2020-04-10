@@ -9,23 +9,30 @@ module.exports = {
             id: ID!
             name: String!
             email: String!
-            status: UserStatus!
+            players: [Player]! # list of player objects associated with this user id
+        } 
+        
+        type Player {
+            id: ID!
+            userId: ID!
+            gameId: ID!
+            status: PlayerStatus!
             statusMessage: String!
             playerState: String
         }
-
+        
         extend type Query {
             me: User
             user(userId: ID!): User
         }
 
         extend type Mutation {
-            updateUser(
+            updatePlayer(
                 userId: ID!
                 gameId: ID!
-                status: UserStatus
+                status: PlayerStatus
                 statusMessage: String
-            ): UserUpdateResponse!
+            ): PlayerUpdateResponse!
             login(name: String, email: String!): LoginResponse
         }
 
@@ -43,39 +50,46 @@ module.exports = {
             user: User
         }
 
-        type UserUpdateResponse {
+        type PlayerUpdateResponse {
             success: Boolean!
             message: String
             user: User
         }
 
-        enum UserStatus {
+        enum PlayerStatus {
             WAITING
             READY
         }
     `,
     resolvers: {
+        User: {
+            // get associated player objects by using the root object's id (user id)
+            players: async ({ id }, _, { dataSources }) => {
+                return await dataSources.userAPI.getPlayers({ userId: id });
+            }
+        },
         Query: {
             me: (_, __, { user }) => user,
             user: async (_, { userId }, { dataSources }) => {
                 const user = await dataSources.userAPI.getUser({ id: userId });
 
                 return !!user && user.dataValues;
-            }
+            },
         },
         Mutation: {
             login: async (_, { name, email }, { dataSources }) => {
                 const user = await dataSources.userAPI.upsertUser({ name, email });
+                console.log(user)
 
                 if (user) {
                     return {
                         token: new Buffer(email).toString('base64'),
-                        user: user.dataValues
+                        user
                     };
                 }
             },
-            updateUser: async (_, { userId, gameId, ...values }, { dataSources }) => {
-                const { dataValues: user } = await dataSources.userAPI.updateUser(values, { id: userId });
+            updatePlayer: async (_, { userId, gameId, ...values }, { dataSources }) => {
+                const { dataValues: user } = await dataSources.userAPI.updatePlayer(values, { id: userId });
                 await pubsub.publish(USER_UPDATED, { userUpdated: { gameId, user } });
 
                 return {

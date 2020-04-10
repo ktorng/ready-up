@@ -4,7 +4,7 @@ import gql from 'graphql-tag';
 
 import LoginForm from './LoginForm';
 import { Loading } from '../common';
-import { USER_DATA } from '../common/schema';
+import { USER_DATA } from '../common/fragments';
 
 export const LOGIN_USER = gql`
     mutation login($name: String!, $email: String!) {
