@@ -64,27 +64,28 @@ class GameAPI extends DataSource {
     }
 
     /**
-     * Gets current users in given gameId
+     * Gets players queried by options
      */
-    getGameUsers({ gameId }) {
-        return this.store.gameUsers.findAll({ where: { gameId } });
+    getGameUsers(options) {
+        return this.store.gameUsers.findAll({ where: options });
     }
 
     /**
-     * Creates a join record for gameId and current userId
+     * Creates a join record for gameId and current userId and returns the player
      */
     async joinGame({ gameId }) {
         const userId = get(this.context, 'user.id');
 
         if (!userId) return;
 
-        const player = await this.store.gameUsers.findOrCreate({
+        const players = await this.store.gameUsers.findOrCreate({
             where: { gameId, userId },
         });
+        const player = players && players[0];
 
-        return selectors.playerReducer(this.store.gameUsers.findOne({
+        return selectors.playerReducer(await this.store.gameUsers.findOne({
             where: { id: player.id },
-            include: [store.users],
+            include: [this.store.users],
         }));
     }
 

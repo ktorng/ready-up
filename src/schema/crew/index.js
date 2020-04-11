@@ -1,9 +1,9 @@
-const { gql, PubSub, withFilter } = require('apollo-server');
+const { gql, withFilter } = require('apollo-server');
 
 const { generatePlayers, generateMission } = require('../../utils/crew');
 const { matchId } = require('../../utils/game');
+const { store: { pubsub } } = require('../../utils');
 
-const pubsub = new PubSub();
 const events = {
     CREW_GAME_STARTED: 'CREW_GAME_STARTED'
 };

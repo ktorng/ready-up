@@ -15,11 +15,10 @@ const PLAYER_JOINED = gql`
 `;
 
 const PLAYER_LEFT = gql`
-    subscription playerLeft($gameId: ID!) {
-        playerLeft(gameId: $gameId) {
+    subscription playerLeft($gameId: ID!, $currentPlayerId: ID!) {
+        playerLeft(gameId: $gameId, currentPlayerId: $currentPlayerId) {
             playerId
             hostId
-            isDeleted
         }
     }
 `;
@@ -58,34 +57,39 @@ export const playerJoined = (gameId) => ({
             { game: { players: [subscriptionData.data.playerJoined.player] } },
             (dst, src) => (Array.isArray(dst) ? [...dst, ...src] : undefined)
         );
-    }
+    },
 });
 
 export const playerLeft = (gameId, currentPlayerId) => ({
     document: PLAYER_LEFT,
-    variables: { gameId },
+    variables: { gameId, currentPlayerId },
     updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData.data || subscriptionData.data.playerLeft.playerId === currentPlayerId) return prev;
+        if (!subscriptionData.data) return prev;
 
-        const { isDeleted, playerId, hostId } = subscriptionData.data.playerLeft;
+        const { playerId, hostId } = subscriptionData.data.playerLeft;
 
-        if (isDeleted) {
-            return { ...prev, game: null };
-        }
+        const players = prev.game.players.reduce((next, player) => {
+            if (hostId === player.id) {
+                player.isHost = true;
+            }
+            if (player.id !== playerId) {
+                next.push(player);
+            }
+            return next;
+        }, []);
 
         return {
             game: {
                 ...prev.game,
-                users: prev.game.players.filter((player) => player.id !== playerId),
-                hostId
-            }
-        }
-    }
+                players,
+            },
+        };
+    },
 });
 
-export const playerUpdated = (gameId, playerId) => ({
+export const playerUpdated = (gameId, currentPlayerId) => ({
     document: PLAYER_UPDATED,
-    variables: { gameId, currentPlayerId: playerId },
+    variables: { gameId, currentPlayerId },
     updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
 
@@ -96,7 +100,7 @@ export const playerUpdated = (gameId, playerId) => ({
         );
 
         return merge({}, nextState);
-    }
+    },
 });
 
 export const crewGameStarted = (gameId) => ({
@@ -108,5 +112,5 @@ export const crewGameStarted = (gameId) => ({
         const nextState = { ...prev, game: subscriptionData.data.crewGameStarted.game };
 
         return merge({}, nextState);
-    }
+    },
 });

@@ -1,8 +1,7 @@
-const { gql, PubSub, withFilter } = require('apollo-server');
+const { gql, withFilter } = require('apollo-server');
 
-const { matchId } = require('../utils/game');
+const { store: { pubsub }, game: { matchId }} = require('../utils');
 
-const pubsub = new PubSub();
 const events = {
     PLAYER_JOINED: 'PLAYER_JOINED',
     PLAYER_LEFT: 'PLAYER_LEFT',
@@ -35,7 +34,7 @@ module.exports = {
 
         extend type Subscription {
             playerJoined(gameId: ID!): PlayerJoinedPayload
-            playerLeft(gameId: ID!): PlayerLeftPayload
+            playerLeft(gameId: ID!, currentPlayerId: ID!): PlayerLeftPayload
             playerUpdated(gameId: ID!, currentPlayerId: ID!): PlayerUpdatedPayload!
         }
 
@@ -43,7 +42,6 @@ module.exports = {
             gameId: ID!
             playerId: ID!
             hostId: ID
-            isDeleted: Boolean!
         }
 
         type PlayerJoinedPayload {
@@ -73,7 +71,6 @@ module.exports = {
             updatePlayer: async (_, { playerId, gameId, ...values }, { dataSources }) => {
                 const player = await dataSources.userAPI.updatePlayer(values, { id: playerId });
                 await pubsub.publish(events.PLAYER_UPDATED, { playerUpdated: { gameId, player } });
-                console.log(player)
 
                 return {
                     success: !!player,
@@ -92,7 +89,8 @@ module.exports = {
             playerLeft: {
                 subscribe: withFilter(
                     () => pubsub.asyncIterator(events.PLAYER_LEFT),
-                    (payload, variables) => matchId(payload.playerLeft.gameId, variables.gameId)
+                    (payload, variables) => matchId(payload.playerLeft.gameId, variables.gameId) &&
+                        !matchId(payload.playerLeft.playerId, variables.currentPlayerId)
                 )
             },
             playerUpdated: {
@@ -100,7 +98,7 @@ module.exports = {
                 subscribe: withFilter(
                     () => pubsub.asyncIterator(events.PLAYER_UPDATED),
                     (payload, variables) => matchId(payload.playerUpdated.gameId, variables.gameId) &&
-                        matchId(payload.playerUpdated.player.id, variables.currentPlayerId)
+                        !matchId(payload.playerUpdated.player.id, variables.currentPlayerId)
                 )
             }
         }

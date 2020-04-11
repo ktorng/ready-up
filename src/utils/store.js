@@ -1,4 +1,7 @@
+const { PubSub } = require('apollo-server');
 const { Sequelize } = require('sequelize');
+
+const pubsub = new PubSub();
 
 const createStore = () => {
     const db = process.env.NODE_ENV === 'production' ?
@@ -100,7 +103,7 @@ const createStore = () => {
     gameUsers.belongsTo(users);
     gameUsers.belongsTo(games);
 
-    return { db, users, games, gameUsers };
+    return { db, users, games, gameUsers, pubsub };
 };
 
 module.exports = createStore();

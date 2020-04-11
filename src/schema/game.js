@@ -1,9 +1,8 @@
-const { gql, PubSub, withFilter } = require('apollo-server');
+const { gql } = require('apollo-server');
 const { isEmpty } = require('lodash');
 
 const { events: playerEvents } = require('./player');
-
-const pubsub = new PubSub();
+const { store: { pubsub } } = require('../utils');
 
 const schema = gql`
     type Game {
@@ -117,34 +116,28 @@ const resolvers = {
         leaveGame: async (_, { gameId }, { dataSources, user }) => {
             try {
                 const players = await dataSources.gameAPI.getGameUsers({ gameId });
-                let game = await dataSources.gameAPI.getGame({ id: gameId });
-                let hostId = game.hostId;
+                const currentPlayer = players.find(player => player.userId === user.id);
+                let nextHost;
 
                 await dataSources.gameAPI.deleteGameUsers({ userId: user.id, gameId });
 
                 if (players.length === 1) {
                     await dataSources.gameAPI.deleteGame({ id: gameId });
-                    game = null;
                 } else {
-                    const nextHost = players.find((player) => player.userId !== game.hostId);
                     // pass host
-                    if (user.id === game.hostId) {
-                        await dataSources.gameAPI.updateGame(
-                            { hostId: nextHost.userId },
-                            { id: gameId }
-                        );
-                        hostId = nextHost.userId;
+                    if (currentPlayer.isHost) {
+                        nextHost = players.find(player => player.id !== currentPlayer.id);
+                        await dataSources.gameAPI.updateGameUser({ isHost: true }, { id: nextHost.id });
                     }
-                }
 
-                await pubsub.publish(playerEvents.PLAYER_LEFT, {
-                    playerLeft: {
-                        gameId,
-                        userId: user.id,
-                        isDeleted: !game,
-                        hostId
-                    }
-                });
+                    await pubsub.publish(playerEvents.PLAYER_LEFT, {
+                        playerLeft: {
+                            gameId,
+                            playerId: currentPlayer.id,
+                            hostId: nextHost && nextHost.id
+                        }
+                    });
+                }
 
                 return { success: true };
             } catch (e) {

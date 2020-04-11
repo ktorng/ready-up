@@ -38,7 +38,9 @@ const Lobby = ({ me, game, subscribe, startCrewGame, player }) => {
      * Add subscriptions for player updates, game updates
      */
     useEffect(() => {
-        subscribe(me.id);
+        if (player) {
+            subscribe(player.id);
+        }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
