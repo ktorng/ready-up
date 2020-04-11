@@ -8,6 +8,9 @@ export const PLAYER_DATA = gql`
         status
         statusMessage
         playerState
+        isHost
+        email
+        name
     }
 `;
 
@@ -26,7 +29,6 @@ export const USER_DATA = gql`
 export const GAME_DATA = gql`
     fragment GameData on Game {
         id
-        hostId
         accessCode
         status
         name

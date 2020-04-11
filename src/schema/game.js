@@ -1,18 +1,13 @@
 const { gql, PubSub, withFilter } = require('apollo-server');
 const { isEmpty } = require('lodash');
 
-const { matchGameId } = require('../utils/game');
+const { events: playerEvents } = require('./player');
 
 const pubsub = new PubSub();
-const events = {
-    PLAYER_JOINED: 'PLAYER_JOINED',
-    PLAYER_LEFT: 'PLAYER_LEFT'
-};
 
 const schema = gql`
     type Game {
         id: ID!
-        hostId: String!
         accessCode: String!
         status: GameStatus!
         name: String!
@@ -35,24 +30,6 @@ const schema = gql`
         startGame(type: GameType, gameId: ID!): GameUpdateResponse!
     }
 
-    extend type Subscription {
-        playerJoined(gameId: ID!): PlayerJoinedPayload
-        playerLeft(gameId: ID!): PlayerLeftPayload
-    }
-
-    type PlayerLeftPayload {
-        gameId: ID!
-        userId: ID!
-        hostId: ID
-        isDeleted: Boolean!
-    }
-
-    type PlayerJoinedPayload {
-        gameId: ID!
-        user: User!
-        isNew: Boolean!
-    }
-
     type GameUpdateResponse {
         success: Boolean!
         message: String
@@ -71,7 +48,7 @@ const schema = gql`
     }
 
     enum GameType {
-        GENERIC
+        CREW
     }
 `;
 
@@ -122,9 +99,9 @@ const resolvers = {
                 };
             }
 
-            await dataSources.gameAPI.joinGame({ gameId: game.id });
-            await pubsub.publish(events.PLAYER_JOINED, {
-                playerJoined: { gameId: game.id, user, isNew }
+            const player = await dataSources.gameAPI.joinGame({ gameId: game.id });
+            await pubsub.publish(playerEvents.PLAYER_JOINED, {
+                playerJoined: { gameId: game.id, player, isNew }
             });
 
             return {
@@ -160,7 +137,7 @@ const resolvers = {
                     }
                 }
 
-                await pubsub.publish(events.PLAYER_LEFT, {
+                await pubsub.publish(playerEvents.PLAYER_LEFT, {
                     playerLeft: {
                         gameId,
                         userId: user.id,
@@ -194,21 +171,6 @@ const resolvers = {
             };
         }
     },
-    Subscription: {
-        playerJoined: {
-            // subscribe only to matching game id
-            subscribe: withFilter(
-                () => pubsub.asyncIterator(events.PLAYER_JOINED),
-                (payload, variables) => matchGameId(payload.playerJoined.gameId, variables.gameId)
-            )
-        },
-        playerLeft: {
-            subscribe: withFilter(
-                () => pubsub.asyncIterator(events.PLAYER_LEFT),
-                (payload, variables) => matchGameId(payload.playerLeft.gameId, variables.gameId)
-            )
-        }
-    }
 };
 
 module.exports = {

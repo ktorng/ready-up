@@ -1,7 +1,7 @@
 const { DataSource } = require('apollo-datasource');
 const { get, pick } = require('lodash');
 
-const { generateAccessCode } = require('../utils/game');
+const { game: { generateAccessCode }, selectors } = require('../utils');
 
 class GameAPI extends DataSource {
     constructor({ store }) {
@@ -26,17 +26,16 @@ class GameAPI extends DataSource {
         try {
             const accessCode = generateAccessCode();
             const game = await this.store.games.create({
-                hostId: userId,
                 size,
                 name,
                 description,
-                accessCode
+                accessCode,
             });
 
             await this.store.gameUsers.create({
                 gameId: get(game, 'dataValues.id'),
                 userId,
-                isHost: true
+                isHost: true,
             });
 
             return game;
@@ -47,7 +46,7 @@ class GameAPI extends DataSource {
 
     async getGames(options = { visibility: 'PUBLIC' }) {
         const games = await this.store.games.findAll({
-            where: options
+            where: options,
         });
 
         return games.map(this.gameReducer);
@@ -57,9 +56,11 @@ class GameAPI extends DataSource {
      * Gets a game record given query options
      */
     async getGame(options) {
-        return this.gameReducer(await this.store.games.findOne({
-            where: options
-        }));
+        return this.gameReducer(
+            await this.store.games.findOne({
+                where: options,
+            })
+        );
     }
 
     /**
@@ -72,12 +73,19 @@ class GameAPI extends DataSource {
     /**
      * Creates a join record for gameId and current userId
      */
-    joinGame({ gameId }) {
+    async joinGame({ gameId }) {
         const userId = get(this.context, 'user.id');
 
         if (!userId) return;
 
-        return this.store.gameUsers.findOrCreate({ where: { gameId, userId } });
+        const player = await this.store.gameUsers.findOrCreate({
+            where: { gameId, userId },
+        });
+
+        return selectors.playerReducer(this.store.gameUsers.findOne({
+            where: { id: player.id },
+            include: [store.users],
+        }));
     }
 
     /**
@@ -129,7 +137,7 @@ class GameAPI extends DataSource {
             'status',
             'size',
             'description',
-            'gameState'
+            'gameState',
         ]);
     }
 }

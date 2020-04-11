@@ -1,7 +1,7 @@
 const { gql, PubSub, withFilter } = require('apollo-server');
 
 const { generatePlayers, generateMission } = require('../../utils/crew');
-const { matchGameId } = require('../../utils/game');
+const { matchId } = require('../../utils/game');
 
 const pubsub = new PubSub();
 const events = {
@@ -125,7 +125,7 @@ module.exports = {
                 subscribe: withFilter(
                     () => pubsub.asyncIterator(events.CREW_GAME_STARTED),
                     (payload, variables) =>
-                        matchGameId(payload.crewGameStarted.gameId, variables.gameId)
+                        matchId(payload.crewGameStarted.gameId, variables.gameId)
                 )
             }
         },

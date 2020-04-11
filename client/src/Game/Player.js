@@ -1,55 +1,43 @@
 import React from 'react';
 import T from 'prop-types';
-import { get } from 'lodash';
 import gql from 'graphql-tag';
-import { useMutation, useQuery } from '@apollo/react-hooks';
+import { useMutation } from '@apollo/react-hooks';
 
 import PlayerReady from './PlayerReady';
 import usePlayerStyles from './usePlayerStyles';
-import { USER_DATA } from '../common/fragments';
+import { PLAYER_DATA } from '../common/fragments';
 
-const GET_USER = gql`
-    query getUser($userId: ID!) {
-        user(userId: $userId) @client {
-            ...UserData
-        }
-    }
-    ${USER_DATA}
-`;
-
-const UPDATE_USER = gql`
-    mutation updatePlayer($userId: ID!, $gameId: ID!, $status: UserStatus, $statusMessage: String) {
-        updateUser(userId: $userId, gameId: $gameId, status: $status, statusMessage: $statusMessage) {
+const UPDATE_PLAYER = gql`
+    mutation updatePlayer($playerId: ID!, $gameId: ID!, $status: PlayerStatus, $statusMessage: String) {
+        updatePlayer(playerId: $playerId, gameId: $gameId, status: $status, statusMessage: $statusMessage) {
             success,
-            user {
-                ...UserData
+            player {
+                ...PlayerData
             }
         }
     }
-    ${USER_DATA}
+    ${PLAYER_DATA}
 `;
 
-const Player = ({ game, userId, current }) => {
+const Player = ({ game, player, isCurrent }) => {
     const classes = usePlayerStyles();
-    const isCurrent = userId === get(current, 'id');
-    const { data: { user } } = useQuery(GET_USER, { variables: { userId: userId }});
-    const [updateUser] = useMutation(UPDATE_USER);
+    const [updatePlayer] = useMutation(UPDATE_PLAYER);
 
     return (
         <div className={classes.player}>
-            <div className={classes.name} title={user.email}>
-                {user.name}
+            <div className={classes.name} title={player.email}>
+                {player.name}
             </div>
             <div className={classes.ready}>
                 <PlayerReady
                     isCurrent={isCurrent}
                     game={game}
-                    user={user}
-                    updateUser={updateUser}
+                    player={player}
+                    updatePlayer={updatePlayer}
                 />
             </div>
             <div className={classes.note}>
-                {user.statusMessage}
+                {player.statusMessage}
             </div>
         </div>
     );
@@ -57,8 +45,8 @@ const Player = ({ game, userId, current }) => {
 
 Player.propTypes = {
     game: T.object,
-    user: T.object,
-    current: T.object
+    player: T.object,
+    isCurrent: T.bool
 };
 
 export default Player;

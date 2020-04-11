@@ -3,25 +3,25 @@ import T from 'prop-types';
 import CheckBoxOutlineBlankRoundedIcon from '@material-ui/icons/CheckBoxOutlineBlankRounded';
 import CheckBoxRoundedIcon from '@material-ui/icons/CheckBoxRounded';
 
-const PlayerReady = ({ game, isCurrent, user, updateUser }) => {
-    const ready = user.status === 'READY';
+const PlayerReady = ({ game, isCurrent, player, updatePlayer }) => {
+    const ready = player.status === 'READY';
 
     const updateStatus = () => {
         const status = ready ? 'WAITING' : 'READY';
-        updateUser({
+        updatePlayer({
             variables: {
                 gameId: game.id,
-                userId: user.id,
+                playerId: player.id,
                 status,
             },
             // provide optimistic update for local cache
             optimisticResponse: {
                 __typename: 'Mutation',
-                updateUser: {
-                    __typename: 'UserUpdateResponse',
+                updatePlayer: {
+                    __typename: 'PlayerUpdateResponse',
                     success: true,
-                    user: {
-                        ...user,
+                    player: {
+                        ...player,
                         status,
                     },
                 },
@@ -43,8 +43,8 @@ const PlayerReady = ({ game, isCurrent, user, updateUser }) => {
 PlayerReady.propTypes = {
     game: T.object.isRequired,
     isCurrent: T.bool.isRequired,
-    user: T.object.isRequired,
-    updateUser: T.func.isRequired,
+    player: T.object.isRequired,
+    updatePlayer: T.func.isRequired,
 };
 
 export default PlayerReady;

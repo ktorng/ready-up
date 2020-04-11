@@ -65,14 +65,6 @@ const createStore = () => {
             allowNull: false,
             defaultValue: 4
         },
-        hostId: {
-            type: Sequelize.INTEGER,
-            allowNull: false,
-            references: {
-                model: 'users',
-                key: 'id'
-            }
-        },
         name: {
             type: Sequelize.STRING,
             allowNull: false,
@@ -98,6 +90,11 @@ const createStore = () => {
             type: Sequelize.STRING,
             allowNull: false,
             defaultValue: ''
+        },
+        isHost: {
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
         },
     });
     gameUsers.belongsTo(users);

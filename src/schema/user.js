@@ -1,7 +1,4 @@
-const { gql, PubSub, withFilter } = require('apollo-server');
-
-const pubsub = new PubSub();
-const USER_UPDATED = 'USER_UPDATED';
+const { gql } = require('apollo-server');
 
 module.exports = {
     schema: gql`
@@ -12,53 +9,18 @@ module.exports = {
             players: [Player]! # list of player objects associated with this user id
         } 
         
-        type Player {
-            id: ID!
-            userId: ID!
-            gameId: ID!
-            status: PlayerStatus!
-            statusMessage: String!
-            playerState: String
-        }
-        
         extend type Query {
             me: User
             user(userId: ID!): User
         }
 
         extend type Mutation {
-            updatePlayer(
-                userId: ID!
-                gameId: ID!
-                status: PlayerStatus
-                statusMessage: String
-            ): PlayerUpdateResponse!
             login(name: String, email: String!): LoginResponse
-        }
-
-        extend type Subscription {
-            userUpdated(gameId: ID!, currentUserId: ID!): UserUpdatedPayload!
-        }
-        
-        type UserUpdatedPayload {
-            gameId: ID!
-            user: User!
         }
 
         type LoginResponse {
             token: String
             user: User
-        }
-
-        type PlayerUpdateResponse {
-            success: Boolean!
-            message: String
-            user: User
-        }
-
-        enum PlayerStatus {
-            WAITING
-            READY
         }
     `,
     resolvers: {
@@ -79,7 +41,6 @@ module.exports = {
         Mutation: {
             login: async (_, { name, email }, { dataSources }) => {
                 const user = await dataSources.userAPI.upsertUser({ name, email });
-                console.log(user)
 
                 if (user) {
                     return {
@@ -88,25 +49,6 @@ module.exports = {
                     };
                 }
             },
-            updatePlayer: async (_, { userId, gameId, ...values }, { dataSources }) => {
-                const { dataValues: user } = await dataSources.userAPI.updatePlayer(values, { id: userId });
-                await pubsub.publish(USER_UPDATED, { userUpdated: { gameId, user } });
-
-                return {
-                    success: !!user,
-                    user
-                };
-            }
         },
-        Subscription: {
-            userUpdated: {
-                // subscribe only to matching game id
-                subscribe: withFilter(
-                    () => pubsub.asyncIterator(USER_UPDATED),
-                    (payload, variables) => payload.userUpdated.gameId === variables.gameId &&
-                        payload.userUpdated.user.id !== parseInt(variables.currentUserId, 10)
-                )
-            }
-        }
     }
 };
