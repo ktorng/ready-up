@@ -16,7 +16,6 @@ module.exports = {
                 'gameId',
                 'status',
                 'statusMessage',
-                'playerState',
                 'isHost',
             ]),
             name: get(player, 'user.name'),

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { merge } from 'lodash';
 
 /**
  * Builds ordered array of players
@@ -7,13 +8,17 @@ import { useMemo } from 'react';
  * 2: player on top
  * 3: player on right
  *
- * @param players - array of players in game
+ * @param game - game object
  * @param me - current user object
  */
-export const usePlayers = (players, me) => {
+export const usePlayers = (game, me) => {
     return useMemo(() => {
+        const { players, gameState: { playerStates } } = game;
         const myPlayerIndex = players.findIndex(p => p.userId === me.id);
 
-        return [...players.slice(myPlayerIndex), ...players.slice(0, myPlayerIndex)];
-    }, [players, me.id]);
+        return merge(
+            [...players.slice(myPlayerIndex), ...players.slice(0, myPlayerIndex)],
+            [...playerStates.slice(myPlayerIndex), ...playerStates.slice(0, myPlayerIndex)]
+        );
+    }, [game, me.id]);
 };

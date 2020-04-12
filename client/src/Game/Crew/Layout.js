@@ -51,7 +51,7 @@ const Layout = ({ me, game }) => {
     const { gameState } = game;
     const { tasks } = gameState;
     // build ordered list of players
-    const players = usePlayers(game.players, me);
+    const players = usePlayers(game, me);
 
     return (
         <div className={classNames(classes.containerCenter, classes.stretch)}>
@@ -62,7 +62,7 @@ const Layout = ({ me, game }) => {
                 <div className={classNames(layoutClasses.playerTop, layoutClasses.border)}>
                     {players[2] && (
                         <Player
-                            user={players[2]}
+                            player={players[2]}
                             tasks={getTasks(tasks, players[2].id)}
                         />
                     )}
@@ -71,7 +71,7 @@ const Layout = ({ me, game }) => {
                     <div className={classNames(layoutClasses.playerVertical)}>
                         {players[1] && (
                             <Player
-                                user={players[1]}
+                                player={players[1]}
                                 tasks={getTasks(tasks, players[1].id)}
                             />
                         )}
@@ -82,7 +82,7 @@ const Layout = ({ me, game }) => {
                     <div className={classNames(layoutClasses.playerVertical)}>
                         {players[3] && (
                             <Player
-                                user={players[3]}
+                                player={players[3]}
                                 tasks={getTasks(tasks, players[3].id)}
                             />
                         )}
@@ -90,8 +90,8 @@ const Layout = ({ me, game }) => {
                 </div>
                 <div className={classNames(layoutClasses.player, layoutClasses.border)}>
                     <Player
-                        user={players[0]}
-                        tasks={tasks[players[0].id]}
+                        player={players[0]}
+                        tasks={getTasks(tasks, players[0].id)}
                         isCurrent
                     />
                 </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import T from 'prop-types';
 import classNames from 'classnames';
+import { isEmpty } from 'lodash';
 import { makeStyles } from '@material-ui/core/styles';
 import red from '@material-ui/core/colors/red';
 import blue from '@material-ui/core/colors/blue';
@@ -53,8 +54,8 @@ const useCardStyles = makeStyles((_) => ({
     },
 }));
 
-const Card = ({ card, taskProps, handleClick, isCurrent, hideHover = false }) => {
-    const isTask = !!taskProps;
+const Card = ({ card, taskProps = {}, handleClick, isCurrent, hideHover = false }) => {
+    const isTask = !isEmpty(taskProps);
     const [isHover, setHover] = useState(false);
     const cardClasses = useCardStyles();
     const { tooltip, symbol } = getTaskProps(taskProps);
@@ -89,7 +90,7 @@ Card.propTypes = {
         color: T.string.isRequired,
     }),
     taskProps: T.shape({
-        type: T.oneOf(Object.keys(TASK_TYPES)).isRequired,
+        type: T.oneOf(Object.keys(TASK_TYPES)),
         order: T.number,
     }),
     handleClick: T.func,

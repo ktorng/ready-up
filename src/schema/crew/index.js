@@ -10,8 +10,8 @@ const events = {
 };
 // TODO: move into util that gets task requirements based on mission number
 const mockTaskReqs = {
-    unordered: 3,
-    ordered: 2
+    UNORDERED: 3,
+    ORDERED: 2
 };
 
 // TODO: split into separate schema files
@@ -45,6 +45,7 @@ module.exports = {
         type PlayerState {
             hand: [Card]!
             isCommander: Boolean!
+            playerId: ID
         }
         
         extend type Game {

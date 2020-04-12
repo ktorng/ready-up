@@ -84,7 +84,6 @@ const createStore = () => {
     const gameUsers = db.define('game_users', {
         createdAt: Sequelize.DATE,
         updatedAt: Sequelize.DATE,
-        playerState: Sequelize.JSON,
         status: {
             type: Sequelize.STRING,
             defaultValue: 'WAITING'

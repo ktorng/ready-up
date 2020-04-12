@@ -7,7 +7,6 @@ export const PLAYER_DATA = gql`
         gameId
         status
         statusMessage
-        playerState
         isHost
         email
         name
@@ -23,6 +22,7 @@ export const GAME_STATE_DATA = gql`
             }
             playerId
             type
+            order
         }
         playerStates {
             hand {
@@ -30,6 +30,7 @@ export const GAME_STATE_DATA = gql`
                 number
             }
             isCommander
+            playerId
         }
         turn
         turnPlayerId

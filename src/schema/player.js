@@ -17,7 +17,6 @@ module.exports = {
             gameId: ID!
             status: PlayerStatus!
             statusMessage: String!
-            playerState: String
             isHost: Boolean!
             name: String!
             email: String!
