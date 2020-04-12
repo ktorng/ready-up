@@ -1,38 +1,37 @@
 import gql from 'graphql-tag';
 import { merge, mergeWith } from 'lodash';
-import { USER_DATA, GAME_DATA } from '../common/schema';
+import { PLAYER_DATA, GAME_DATA } from '../common/fragments';
 
 const PLAYER_JOINED = gql`
     subscription playerJoined($gameId: ID!) {
         playerJoined(gameId: $gameId) {
-            user {
-                ...UserData
+            player {
+                ...PlayerData
             }
             isNew
         }
     }
-    ${USER_DATA}
+    ${PLAYER_DATA}
 `;
 
 const PLAYER_LEFT = gql`
-    subscription playerLeft($gameId: ID!) {
-        playerLeft(gameId: $gameId) {
-            userId
+    subscription playerLeft($gameId: ID!, $currentPlayerId: ID!) {
+        playerLeft(gameId: $gameId, currentPlayerId: $currentPlayerId) {
+            playerId
             hostId
-            isDeleted
         }
     }
 `;
 
-const USER_UPDATED = gql`
-    subscription userUpdated($gameId: ID!, $currentUserId: ID!) {
-        userUpdated(gameId: $gameId, currentUserId: $currentUserId) {
-            user {
-                ...UserData
+const PLAYER_UPDATED = gql`
+    subscription playerUpdated($gameId: ID!, $currentPlayerId: ID!) {
+        playerUpdated(gameId: $gameId, currentPlayerId: $currentPlayerId) {
+            player {
+                ...PlayerData
             }
         }
     }
-    ${USER_DATA}
+    ${PLAYER_DATA}
 `;
 
 const CREW_GAME_STARTED = gql`
@@ -55,48 +54,53 @@ export const playerJoined = (gameId) => ({
         return mergeWith(
             {},
             prev,
-            { game: { users: [subscriptionData.data.playerJoined.user] } },
+            { game: { players: [subscriptionData.data.playerJoined.player] } },
             (dst, src) => (Array.isArray(dst) ? [...dst, ...src] : undefined)
         );
-    }
+    },
 });
 
-export const playerLeft = (gameId, origUserId) => ({
+export const playerLeft = (gameId, currentPlayerId) => ({
     document: PLAYER_LEFT,
-    variables: { gameId },
+    variables: { gameId, currentPlayerId },
     updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData.data || subscriptionData.data.playerLeft.userId === origUserId) return prev;
+        if (!subscriptionData.data) return prev;
 
-        const { isDeleted, userId, hostId } = subscriptionData.data.playerLeft;
+        const { playerId, hostId } = subscriptionData.data.playerLeft;
 
-        if (isDeleted) {
-            return { ...prev, game: null };
-        }
+        const players = prev.game.players.reduce((next, player) => {
+            if (hostId === player.id) {
+                player.isHost = true;
+            }
+            if (player.id !== playerId) {
+                next.push(player);
+            }
+            return next;
+        }, []);
 
         return {
             game: {
                 ...prev.game,
-                users: prev.game.users.filter((user) => user.id !== userId),
-                hostId
-            }
-        }
-    }
+                players,
+            },
+        };
+    },
 });
 
-export const userUpdated = (gameId, userId) => ({
-    document: USER_UPDATED,
-    variables: { gameId, currentUserId: userId },
+export const playerUpdated = (gameId, currentPlayerId) => ({
+    document: PLAYER_UPDATED,
+    variables: { gameId, currentPlayerId },
     updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
 
-        const { user: userUpdated } = subscriptionData.data.userUpdated;
+        const { player: playerUpdated } = subscriptionData.data.playerUpdated;
         const nextState = { ...prev };
-        nextState.game.users = nextState.game.users.map((user) =>
-            user.id === userUpdated.id ? userUpdated : user
+        nextState.game.players = nextState.game.players.map((player) =>
+            player.id === playerUpdated.id ? playerUpdated : player
         );
 
         return merge({}, nextState);
-    }
+    },
 });
 
 export const crewGameStarted = (gameId) => ({
@@ -108,5 +112,5 @@ export const crewGameStarted = (gameId) => ({
         const nextState = { ...prev, game: subscriptionData.data.crewGameStarted.game };
 
         return merge({}, nextState);
-    }
+    },
 });

@@ -21,6 +21,8 @@ const usePlayerStyles = makeStyles(_ => ({
     },
     name: {
         flex: '0 0 25%',
+        display: 'flex',
+        alignItems: 'center',
     },
     ready: {
         flex: '0 0 15%',

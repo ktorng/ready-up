@@ -1,4 +1,7 @@
+const { PubSub } = require('apollo-server');
 const { Sequelize } = require('sequelize');
+
+const pubsub = new PubSub();
 
 const createStore = () => {
     const db = process.env.NODE_ENV === 'production' ?
@@ -26,15 +29,6 @@ const createStore = () => {
             type: Sequelize.STRING,
             allowNull: false,
             unique: true,
-        },
-        status: {
-            type: Sequelize.STRING,
-            defaultValue: 'WAITING'
-        },
-        statusMessage: {
-            type: Sequelize.STRING,
-            allowNull: false,
-            defaultValue: ''
         },
     }, {
         hooks: {
@@ -74,14 +68,6 @@ const createStore = () => {
             allowNull: false,
             defaultValue: 4
         },
-        hostId: {
-            type: Sequelize.INTEGER,
-            allowNull: false,
-            references: {
-                model: 'users',
-                key: 'id'
-            }
-        },
         name: {
             type: Sequelize.STRING,
             allowNull: false,
@@ -98,12 +84,25 @@ const createStore = () => {
     const gameUsers = db.define('game_users', {
         createdAt: Sequelize.DATE,
         updatedAt: Sequelize.DATE,
-        playerState: Sequelize.JSON,
+        status: {
+            type: Sequelize.STRING,
+            defaultValue: 'WAITING'
+        },
+        statusMessage: {
+            type: Sequelize.STRING,
+            allowNull: false,
+            defaultValue: ''
+        },
+        isHost: {
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
     });
     gameUsers.belongsTo(users);
     gameUsers.belongsTo(games);
 
-    return { db, users, games, gameUsers };
+    return { db, users, games, gameUsers, pubsub };
 };
 
 module.exports = createStore();

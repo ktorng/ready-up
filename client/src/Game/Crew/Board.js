@@ -4,7 +4,7 @@ import Modal from '@material-ui/core/Modal';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
 
-import TasksList from './TasksList';
+import TaskList from './TaskList';
 import Card from './Card';
 
 import useCrewStyles from './useCrewStyles';
@@ -32,10 +32,9 @@ const Board = ({ gameState, tasks }) => {
     const [open, setOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
 
-    const handleClickCard = (card, taskReq) => {
-        console.log(card);
+    const handleClickCard = (card, taskProps) => {
         setOpen(true);
-        setSelectedTask({ card, taskReq });
+        setSelectedTask({ card, taskProps });
     };
 
     const handleClose = () => setOpen(false);
@@ -43,7 +42,7 @@ const Board = ({ gameState, tasks }) => {
     return (
         <div className={crewClasses.boardContainer}>
             {!turn ? (
-                <TasksList tasks={tasks} title="Assign Tasks" handleClickCard={handleClickCard} />
+                <TaskList tasks={tasks} title="Assign Tasks" handleClickCard={handleClickCard} />
             ) : (
                 'Game in progress'
             )}
@@ -51,7 +50,7 @@ const Board = ({ gameState, tasks }) => {
                 <Modal open={open} onClose={handleClose}>
                     <div className={modalClasses.paper}>
                         <h4>Are you sure you want to take this task?</h4>
-                        <Card card={selectedTask.card} taskReq={selectedTask.taskReq} isTask hideHover />
+                        <Card card={selectedTask.card} taskProps={selectedTask.taskProps} hideHover />
                         <div>
                             <Button className={classes.button} variant="outlined" color="primary">
                                 Yes
@@ -74,7 +73,7 @@ const Board = ({ gameState, tasks }) => {
 
 Board.propTypes = {
     gameState: T.object.isRequired,
-    tasks: T.object, // unassigned tasks
+    tasks: T.array, // unassigned tasks
 };
 
 export default Board;

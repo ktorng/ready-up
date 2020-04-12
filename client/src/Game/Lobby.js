@@ -20,27 +20,27 @@ const LEAVE_GAME = gql`
     }
 `;
 
-const Lobby = ({ me, game, subscribe, startCrewGame }) => {
+const Lobby = ({ me, game, subscribe, startCrewGame, player }) => {
     const classes = useStyles();
     const playerClasses = usePlayerStyles();
     const navigate = useNavigate();
     const [leaveGame] = useMutation(LEAVE_GAME, {
         variables: { gameId: game.id },
         onCompleted: ({ leaveGame: { success } }) => {
-            console.log(success)
             if (success) {
                 navigate('/');
             }
         }
     });
-    const isStartDisabled = game.users.some(user => user.status !== 'READY');
-    const isHost = me.id === game.hostId;
+    const isStartDisabled = game.players.some(player => player.status !== 'READY');
 
     /**
      * Add subscriptions for player updates, game updates
      */
     useEffect(() => {
-        subscribe(me.id);
+        if (player) {
+            subscribe(player.id);
+        }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
@@ -51,10 +51,10 @@ const Lobby = ({ me, game, subscribe, startCrewGame }) => {
                 <div className={playerClasses.ready}>Ready</div>
                 <div className={playerClasses.note}>Note</div>
             </div>
-            {game.users.map((user) => (
-                <Player key={user.email} game={game} userId={user.id} current={me} />
+            {game.players.map((player) => (
+                <Player key={`player-${player.id}`} game={game} player={player} isCurrent={me.id === player.userId} />
             ))}
-            {Array(game.size - game.users.length)
+            {Array(game.size - game.players.length)
                 .fill(0)
                 .map((_, i) => (
                     <div
@@ -66,7 +66,7 @@ const Lobby = ({ me, game, subscribe, startCrewGame }) => {
                 ))}
             <GameActions
                 isStartDisabled={isStartDisabled}
-                isHost={isHost}
+                isHost={player.isHost}
                 startGame={startCrewGame}
                 leaveGame={leaveGame}
             />
@@ -79,6 +79,7 @@ Lobby.propTypes = {
     game: T.object,
     subscribe: T.func.isRequired,
     startCrewGame: T.func.isRequired,
+    player: T.object,
 };
 
 export default Lobby;

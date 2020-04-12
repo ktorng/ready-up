@@ -9,12 +9,21 @@ import useStyles from '../common/useStyles';
 const getStatus = (game, gameState) => {
     if (game.status === 'WAITING') {
         return 'Waiting for players...';
-    }
-    if (gameState.turn === 0) {
-        return 'Assigning Tasks...';
-    }
+    } else {
+        const { turnPlayerId, turn } = gameState;
+        const currentPlayer = game.players.find(p => p.id === turnPlayerId);
 
-    return `Turn: ${gameState.turn}`;
+        return (
+            <>
+                <p style={{ marginTop: 0 }}>
+                    {turn ? `Turn: ${gameState.turn}` : 'Assigning Tasks...'}
+                </p>
+                <p style={{ marginTop: 0 }}>
+                    {`Waiting on player: ${currentPlayer.name}`}
+                </p>
+            </>
+        )
+    }
 };
 
 const Header = ({ game, showAccessCode, gameState }) => {
@@ -36,7 +45,7 @@ const Header = ({ game, showAccessCode, gameState }) => {
                     </div>
                 </h3>
             )}
-            <h3 className={classes.grey}>{getStatus(game, gameState)}</h3>
+            <h3 className={classNames(classes.containerCenter, classes.grey)}>{getStatus(game, gameState)}</h3>
         </>
     );
 };

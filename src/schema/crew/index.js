@@ -1,17 +1,23 @@
-const { gql, PubSub, withFilter } = require('apollo-server');
+const { gql, withFilter } = require('apollo-server');
+const { get } = require('lodash');
 
 const { generatePlayers, generateMission } = require('../../utils/crew');
-const { matchGameId } = require('../../utils/game');
+const { matchId } = require('../../utils/game');
+const { store: { pubsub } } = require('../../utils');
 
-const pubsub = new PubSub();
 const events = {
     CREW_GAME_STARTED: 'CREW_GAME_STARTED'
 };
+// TODO: move into util that gets task requirements based on mission number
+const mockTaskReqs = {
+    UNORDERED: 3,
+    ORDERED: 2
+};
+
 // TODO: split into separate schema files
 module.exports = {
     schema: gql`
         type Task {
-            id: ID!
             card: Card
             order: Int
             playerId: ID
@@ -27,22 +33,23 @@ module.exports = {
         type Card {
             number: Int!
             color: String # ['R', 'G', 'B', 'Y', 'W']
-            isRocket: Boolean!
-            order: Int
         }
-
-        type Player {
-            userId: ID!
-            gameId: ID!
-            playerState: String
+        
+        type GameState {
+            tasks: [Task]
+            playerStates: [PlayerState]
+            turn: Int
+            turnPlayerId: ID
         }
-
+        
+        type PlayerState {
+            hand: [Card]!
+            isCommander: Boolean!
+            playerId: ID
+        }
+        
         extend type Game {
-            gameState: String
-        }
-
-        extend type GameUpdateResponse {
-            players: [Player]
+            gameState: GameState
         }
 
         enum TaskType {
@@ -68,57 +75,40 @@ module.exports = {
         type CrewGameStartedPayload {
             gameId: ID!
             game: Game!
-            players: [Player]!
         }
     `,
     resolvers: {
         Mutation: {
             startCrewGame: async (_, { gameId }, { dataSources }) => {
-                // TODO: move into util
-                const mockTaskReqs = {
-                    unordered: 3,
-                    ordered: 2
-                };
-                // generate game state and player states
+                const players = await dataSources.userAPI.getPlayers({ gameId });
+                const playerStates = generatePlayers(players.map(p => p.id));
+                const commanderPlayerId = get(playerStates.find(p => p.isCommander), 'playerId');
+                const tasks = generateMission(5, mockTaskReqs);
+                // generate game state
                 const gameState = {
-                    gameId,
-                    played: [],
-                    tasks: generateMission(5, mockTaskReqs),
-                    turn: 0 // 0: mission assignment, -1: complete, 1+: player turns
+                    tasks,
+                    playerStates,
+                    turn: 0, // 0: mission assignment, -1: complete, 1+: player turns
+                    turnPlayerId: commanderPlayerId,
                 };
-                const playerStates = generatePlayers();
 
                 try {
-                    let game = await dataSources.gameAPI.updateGame(
+                    const game = await dataSources.gameAPI.updateGame(
                         {
                             status: 'IN_PROGRESS',
                             gameState: JSON.stringify(gameState)
                         },
                         { id: gameId }
                     );
-                    let players = await dataSources.gameAPI.getGameUsers({ gameId: game.id });
-                    // update each player object in game
-                    players = await Promise.all(
-                        players.map((player, i) =>
-                            dataSources.gameAPI.updateGameUser(
-                                { playerState: JSON.stringify(playerStates[i]) },
-                                { gameId, userId: player.userId }
-                            )
-                        )
-                    );
-                    game = game.dataValues;
-                    players = players.map((player) => player.dataValues);
 
-                    // emit event for other players
                     await pubsub.publish(events.CREW_GAME_STARTED, {
-                        crewGameStarted: { gameId: game.id, game, players }
+                        crewGameStarted: { gameId, game }
                     });
 
                     // return game state and player states
                     return {
                         success: true,
                         game,
-                        players
                     };
                 } catch (e) {
                     console.error(e);
@@ -131,7 +121,7 @@ module.exports = {
                 subscribe: withFilter(
                     () => pubsub.asyncIterator(events.CREW_GAME_STARTED),
                     (payload, variables) =>
-                        matchGameId(payload.crewGameStarted.gameId, variables.gameId)
+                        matchId(payload.crewGameStarted.gameId, variables.gameId)
                 )
             }
         },

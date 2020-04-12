@@ -1,9 +1,8 @@
 const { DataSource } = require('apollo-datasource');
-const { get, pick } = require('lodash');
-const { Sequelize } = require('sequelize');
+const { get } = require('lodash');
 const isEmail = require('isemail');
 
-const store = require('../utils/store');
+const { store, selectors } = require('../utils');
 
 class UserAPI extends DataSource {
     constructor({ store }) {
@@ -33,22 +32,21 @@ class UserAPI extends DataSource {
 
         await this.store.users.upsert({ name, email }, { returning: true });
 
-        return this.store.users.findOne({ where: { email } })
+        const user = await this.store.users.findOne({ where: { email } });
+
+        return user && selectors.userReducer(user);
     }
 
     /**
-     * Gets user records queried by list of userIds
+     * Gets players (gameUser join records) queried by options
      */
-    async getPlayers(gameId) {
+    async getPlayers(options) {
         const players = await this.store.gameUsers.findAll({
-            where: { gameId },
+            where: options,
             include: [store.users],
         });
 
-        return players.map(player => ({
-            ...this.userReducer(player.user),
-            playerState: player.dataValues.playerState
-        }));
+        return players.map(selectors.playerReducer);
     }
 
     /**
@@ -61,24 +59,17 @@ class UserAPI extends DataSource {
     /**
      * Updates a user record and then returns the updated record
      */
-    async updateUser(values, options) {
-        const updated = await this.store.users.update(values, { where: options });
+    async updatePlayer(values, options) {
+        const updated = await this.store.gameUsers.update(values, { where: options });
 
         if (updated[0]) {
-            return this.store.users.findOne({ where: options });
+            return selectors.playerReducer(await this.store.gameUsers.findOne({
+                where: options,
+                include: [store.users]
+            }));
         }
     }
 
-    userReducer(user) {
-        return pick(user, [
-            'id',
-            'email',
-            'name',
-            'status',
-            'statusMessage',
-            'playerState'
-        ]);
-    }
 }
 
 module.exports = UserAPI;

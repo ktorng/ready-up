@@ -1,31 +1,25 @@
 import React, { useMemo } from 'react';
 import T from 'prop-types';
 import classNames from 'classnames';
-import { isEmpty } from 'lodash';
 
 import Card from './Card';
-import TasksList from './TasksList';
+import TaskList from './TaskList';
 
 import useStyles from '../../common/useStyles';
 import useCrewStyles from './useCrewStyles';
 
-const Player = ({ user, tasks, isCurrent = false }) => {
-    const { id, playerState } = user;
+const Player = ({ player, tasks, isCurrent = false }) => {
+    const { id } = player;
     const classes = useStyles();
     const crewClasses = useCrewStyles();
     const sortedHand = useMemo(() => {
-        const { hand } = JSON.parse(playerState);
-
-        return sortHand(hand);
-    }, [playerState]);
-    const hasTasks = useMemo(() => {
-        return Object.keys(tasks).some((type) => !isEmpty(tasks[type]));
-    }, [tasks]);
+        return sortHand(player.hand);
+    }, [player.hand]);
 
     return (
         <div className={crewClasses.playerContainer}>
             <h4 className={classNames(classes.bold, classes.noMargin)}>
-                {user.name}
+                {player.name}
             </h4>
             <div className={crewClasses.cardContainer}>
                 {sortedHand.map((card, i) => (
@@ -36,16 +30,16 @@ const Player = ({ user, tasks, isCurrent = false }) => {
                     />
                 ))}
             </div>
-            {hasTasks && (
-                <TasksList tasks={tasks} title="Tasks to complete" />
+            {!!tasks.length && (
+                <TaskList tasks={tasks} title="Tasks to complete" />
             )}
         </div>
     );
 };
 
 Player.propTypes = {
-    user: T.object,
-    tasks: T.object,
+    player: T.object,
+    tasks: T.array,
     isCurrent: T.bool,
 };
 

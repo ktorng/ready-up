@@ -11,10 +11,11 @@ const store = require('./utils/store');
 const UserAPI = require('./datasources/user');
 const GameAPI = require('./datasources/game');
 
+const isProdEnv = process.env.NODE_ENV === 'production';
 const app = express();
 app.use(cors());
 
-if (process.env.NODE_ENV === 'production') {
+if (isProdEnv) {
     app.use(express.static('client/build'));
     app.get('*', function(req, res) {
         res.sendFile('client/build/index.html', { root: process.cwd() });
@@ -70,7 +71,9 @@ server.installSubscriptionHandlers(httpServer);
 httpServer.listen({ port: process.env.PORT || 8000 }, async () => {
     try {
         await store.db.authenticate();
-        await store.db.sync({ force: true });
+        if (isProdEnv) {
+            await store.db.sync({ force: true });
+        }
         console.log('Connection has been established successfully.');
     } catch (error) {
         console.error('Unable to connect to the database:', error);

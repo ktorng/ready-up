@@ -8,5 +8,5 @@ module.exports = {
 
         return code;
     },
-    matchGameId: (a, b) => parseInt(a, 10) === parseInt(b, 10)
+    matchId: (a, b) => parseInt(a, 10) === parseInt(b, 10)
 };

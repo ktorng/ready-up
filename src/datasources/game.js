@@ -1,7 +1,7 @@
 const { DataSource } = require('apollo-datasource');
 const { get, pick } = require('lodash');
 
-const { generateAccessCode } = require('../utils/game');
+const { game: { generateAccessCode }, selectors } = require('../utils');
 
 class GameAPI extends DataSource {
     constructor({ store }) {
@@ -26,17 +26,16 @@ class GameAPI extends DataSource {
         try {
             const accessCode = generateAccessCode();
             const game = await this.store.games.create({
-                hostId: userId,
                 size,
                 name,
                 description,
-                accessCode
+                accessCode,
             });
 
             await this.store.gameUsers.create({
                 gameId: get(game, 'dataValues.id'),
                 userId,
-                isHost: true
+                isHost: true,
             });
 
             return game;
@@ -47,37 +46,47 @@ class GameAPI extends DataSource {
 
     async getGames(options = { visibility: 'PUBLIC' }) {
         const games = await this.store.games.findAll({
-            where: options
+            where: options,
         });
 
-        return games.map(this.gameReducer);
+        return games.map(selectors.gameReducer);
     }
 
     /**
      * Gets a game record given query options
      */
     async getGame(options) {
-        return this.gameReducer(await this.store.games.findOne({
-            where: options
-        }));
+        return selectors.gameReducer(
+            await this.store.games.findOne({
+                where: options,
+            })
+        );
     }
 
     /**
-     * Gets current users in given gameId
+     * Gets players queried by options
      */
-    getGameUsers({ gameId }) {
-        return this.store.gameUsers.findAll({ where: { gameId } });
+    getGameUsers(options) {
+        return this.store.gameUsers.findAll({ where: options });
     }
 
     /**
-     * Creates a join record for gameId and current userId
+     * Creates a join record for gameId and current userId and returns the player
      */
-    joinGame({ gameId }) {
+    async joinGame({ gameId }) {
         const userId = get(this.context, 'user.id');
 
         if (!userId) return;
 
-        return this.store.gameUsers.findOrCreate({ where: { gameId, userId } });
+        const players = await this.store.gameUsers.findOrCreate({
+            where: { gameId, userId },
+        });
+        const player = players && players[0];
+
+        return selectors.playerReducer(await this.store.gameUsers.findOne({
+            where: { id: player.id },
+            include: [this.store.users],
+        }));
     }
 
     /**
@@ -87,7 +96,7 @@ class GameAPI extends DataSource {
         const updated = await this.store.games.update(values, { where: options });
 
         if (updated[0]) {
-            return this.store.games.findOne({ where: options });
+            return selectors.gameReducer(await this.store.games.findOne({ where: options }));
         }
     }
 
@@ -118,19 +127,6 @@ class GameAPI extends DataSource {
         const deleted = await this.store.games.destroy({ where: options });
 
         return !!deleted[0];
-    }
-
-    gameReducer(game) {
-        return pick(game, [
-            'id',
-            'hostId',
-            'accessCode',
-            'name',
-            'status',
-            'size',
-            'description',
-            'gameState'
-        ]);
     }
 }
 
