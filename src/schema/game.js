@@ -56,7 +56,9 @@ const resolvers = {
         // get associated player objects by using the root object's id (game id)
         players: async ({ id }, _, { dataSources }) => {
             return dataSources.userAPI.getPlayers({ gameId: id });
-        }
+        },
+        // parse gameState for response
+        gameState: (game) => JSON.parse(game.gameState || null)
     },
     Query: {
         games: (_, __, { dataSources }) => dataSources.gameAPI.getGames(),

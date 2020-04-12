@@ -49,14 +49,14 @@ class GameAPI extends DataSource {
             where: options,
         });
 
-        return games.map(this.gameReducer);
+        return games.map(selectors.gameReducer);
     }
 
     /**
      * Gets a game record given query options
      */
     async getGame(options) {
-        return this.gameReducer(
+        return selectors.gameReducer(
             await this.store.games.findOne({
                 where: options,
             })
@@ -96,7 +96,7 @@ class GameAPI extends DataSource {
         const updated = await this.store.games.update(values, { where: options });
 
         if (updated[0]) {
-            return this.store.games.findOne({ where: options });
+            return selectors.gameReducer(await this.store.games.findOne({ where: options }));
         }
     }
 
@@ -127,19 +127,6 @@ class GameAPI extends DataSource {
         const deleted = await this.store.games.destroy({ where: options });
 
         return !!deleted[0];
-    }
-
-    gameReducer(game) {
-        return pick(game, [
-            'id',
-            'hostId',
-            'accessCode',
-            'name',
-            'status',
-            'size',
-            'description',
-            'gameState',
-        ]);
     }
 }
 

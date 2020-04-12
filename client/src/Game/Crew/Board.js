@@ -33,7 +33,6 @@ const Board = ({ gameState, tasks }) => {
     const [selectedTask, setSelectedTask] = useState(null);
 
     const handleClickCard = (card, taskReq) => {
-        console.log(card);
         setOpen(true);
         setSelectedTask({ card, taskReq });
     };
@@ -74,7 +73,7 @@ const Board = ({ gameState, tasks }) => {
 
 Board.propTypes = {
     gameState: T.object.isRequired,
-    tasks: T.object, // unassigned tasks
+    tasks: T.array, // unassigned tasks
 };
 
 export default Board;

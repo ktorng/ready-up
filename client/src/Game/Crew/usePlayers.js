@@ -7,13 +7,13 @@ import { useMemo } from 'react';
  * 2: player on top
  * 3: player on right
  *
- * @param users - array of users in game
+ * @param players - array of players in game
  * @param me - current user object
  */
-export const usePlayers = (users, me) => {
+export const usePlayers = (players, me) => {
     return useMemo(() => {
-        const myPlayerIndex = users.findIndex(user => user.id === me.id);
+        const myPlayerIndex = players.findIndex(p => p.userId === me.id);
 
-        return [...users.slice(myPlayerIndex), ...users.slice(0, myPlayerIndex)];
-    }, [users, me.id]);
+        return [...players.slice(myPlayerIndex), ...players.slice(0, myPlayerIndex)];
+    }, [players, me.id]);
 };

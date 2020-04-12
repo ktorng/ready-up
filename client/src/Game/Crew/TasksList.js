@@ -47,12 +47,7 @@ const TasksList = ({ tasks, title, handleClickCard }) => {
 };
 
 TasksList.propTypes = {
-    tasks: T.shape({
-        ordered: T.array,
-        unordered: T.array,
-        first: T.object,
-        last: T.object
-    }),
+    tasks: T.array,
     title: T.string,
     handleClickCard: T.func,
 };

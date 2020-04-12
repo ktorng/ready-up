@@ -1,20 +1,19 @@
-const colors = ['R', 'G', 'B', 'Y', 'W'];
-const numbers = [...Array(9)].map((_, i) => i + 1);
-const rockets = [...Array(4)].map((_, i) => i + 1);
+const { COLORS, ROCKETS, NUMBERS, TASK_TYPES } = require('./constants');
 
 module.exports = {
     /**
      * Generates a list of player objects which contain a list of cards and whether or not the
      * player is the commander
      *
-     * @returns {{isCommander: boolean, hand: []}[]}
+     * @param playerIds {string[]}
+     * @returns {{}[]} list of player hands
      */
-    generatePlayers: () => {
+    generatePlayers: (playerIds) => {
         const players = [...Array(4)].map(() => ({ isCommander: false, hand: [] }));
-        const cards = colors.reduce(
+        const cards = COLORS.reduce(
             (tot, color) => [
                 ...tot,
-                ...(color === 'W' ? rockets : numbers).map((number) => ({ color, number }))
+                ...(color === 'W' ? ROCKETS : NUMBERS).map((number) => ({ color, number })),
             ],
             []
         );
@@ -37,24 +36,26 @@ module.exports = {
             }
         }
 
-        return players;
+        // return list of hands with playerId attached
+        return playerIds.map((id, i) => ({ ...players[i], playerId: id }));
     },
     /**
      * Generates a list of task objects which contain card and optional order
      *
-     * @param count - number of tasks
-     * @param taskReqs - task requirements; object of counts for each requirement
+     * @param count {number} - number of tasks
+     * @param taskReqs {Object} - task requirements; object of counts for each requirement
+     * @returns {{}[]} dict of player id or "unassigned" to list of tasks
      */
     generateMission: (count, taskReqs) => {
-        const tasks = {
-            unordered: [],
-            ordered: [],
-            first: null,
-            last: null
-        };
-        const cards = colors
-            .filter((color) => color !== 'W')
-            .reduce((tot, color) => [...tot, ...numbers.map((number) => ({ color, number }))], []);
+        const orderIndex = taskReqs[TASK_TYPES.ORDERED];
+        const buildTask = (card, type, order) => ({
+            card,
+            type,
+            order,
+        });
+        const tasks = [];
+        const cards = COLORS.filter((color) => color !== 'W') // rockets cannot be tasks
+            .reduce((tot, color) => [...tot, ...NUMBERS.map((number) => ({ color, number }))], []);
 
         [...Array(count)].forEach(() => {
             // get random card
@@ -65,17 +66,19 @@ module.exports = {
             const card = cards.pop();
 
             // push to task type depending on task requirements
-            if (taskReqs.first) {
-                tasks.first = card;
-                taskReqs.first = 0;
-            } else if (taskReqs.last) {
-                tasks.last = card;
-                taskReqs.last = 0;
-            } else if (taskReqs.ordered) {
-                tasks.ordered.push(card);
-                taskReqs.ordered--;
+            if (taskReqs[TASK_TYPES.FIRST]) {
+                tasks.push(buildTask(card, TASK_TYPES.FIRST));
+                taskReqs[TASK_TYPES.FIRST] = 0;
+            } else if (taskReqs[TASK_TYPES.LAST]) {
+                tasks.push(buildTask(card, TASK_TYPES.LAST));
+                taskReqs[TASK_TYPES.LAST] = 0;
+            } else if (taskReqs[TASK_TYPES.ORDERED]) {
+                tasks.push(
+                    buildTask(card, TASK_TYPES.ORDERED, orderIndex - taskReqs[TASK_TYPES.ORDERED])
+                );
+                taskReqs[TASK_TYPES.ORDERED]--;
             } else {
-                tasks.unordered.push(card);
+                tasks.push(buildTask(card, TASK_TYPES.UNORDERED));
             }
         });
 
@@ -101,7 +104,7 @@ module.exports = {
 
         const gameState = {
             isLost: false,
-            tasks
+            tasks,
         };
 
         const isTaskCompleted = (task) =>
@@ -146,5 +149,5 @@ module.exports = {
             }
             return gameState;
         }
-    }
+    },
 };

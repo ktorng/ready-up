@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import T from 'prop-types';
 import classNames from 'classnames';
 import { makeStyles } from '@material-ui/core/styles';
@@ -6,7 +6,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import Board from './Board';
 import Player from './Player';
 import Header from '../Header';
-import { useTasks } from './useTasks';
 import { usePlayers } from './usePlayers';
 
 import useStyles from '../../common/useStyles';
@@ -44,17 +43,15 @@ const useLayoutStyles = makeStyles((_) => ({
     },
 }));
 
+const getTasks = (tasks, playerId) => tasks.filter(t => t.playerId === playerId);
+
 const Layout = ({ me, game }) => {
     const classes = useStyles();
     const layoutClasses = useLayoutStyles();
-
-    const gameState = useMemo(() => {
-        return JSON.parse(game.gameState);
-    }, [game.gameState]);
-    // build dict of tasks by user id
-    const tasks = useTasks(gameState.tasks, game.users.map(user => user.id));
+    const { gameState } = game;
+    const { tasks } = gameState;
     // build ordered list of players
-    const players = usePlayers(game.users, me);
+    const players = usePlayers(game.players, me);
 
     return (
         <div className={classNames(classes.containerCenter, classes.stretch)}>
@@ -66,7 +63,7 @@ const Layout = ({ me, game }) => {
                     {players[2] && (
                         <Player
                             user={players[2]}
-                            tasks={tasks[players[2].id]}
+                            tasks={getTasks(tasks, players[2].id)}
                         />
                     )}
                 </div>
@@ -75,18 +72,18 @@ const Layout = ({ me, game }) => {
                         {players[1] && (
                             <Player
                                 user={players[1]}
-                                tasks={tasks[players[1].id]}
+                                tasks={getTasks(tasks, players[1].id)}
                             />
                         )}
                     </div>
                     <div className={layoutClasses.board}>
-                        <Board gameState={gameState} tasks={tasks.unassigned} />
+                        <Board gameState={gameState} tasks={getTasks(tasks, null)} />
                     </div>
                     <div className={classNames(layoutClasses.playerVertical)}>
                         {players[3] && (
                             <Player
                                 user={players[3]}
-                                tasks={tasks[players[3].id]}
+                                tasks={getTasks(tasks, players[3].id)}
                             />
                         )}
                     </div>

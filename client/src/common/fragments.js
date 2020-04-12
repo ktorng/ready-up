@@ -14,6 +14,28 @@ export const PLAYER_DATA = gql`
     }
 `;
 
+export const GAME_STATE_DATA = gql`
+    fragment GameStateData on GameState {
+        tasks {
+            card {
+                color
+                number
+            }
+            playerId
+            type
+        }
+        playerStates {
+            hand {
+                color
+                number
+            }
+            isCommander
+        }
+        turn
+        turnPlayerId
+    }
+`;
+
 export const USER_DATA = gql`
     fragment UserData on User {
         id
@@ -34,10 +56,13 @@ export const GAME_DATA = gql`
         name
         description
         size
-        gameState
+        gameState {
+            ...GameStateData
+        }
         players {
             ...PlayerData
         }
     }
     ${PLAYER_DATA}
+    ${GAME_STATE_DATA}
 `;
