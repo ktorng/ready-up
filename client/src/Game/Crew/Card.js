@@ -8,6 +8,8 @@ import green from '@material-ui/core/colors/green';
 import yellow from '@material-ui/core/colors/yellow';
 import grey from '@material-ui/core/colors/grey';
 
+import { TASK_TYPES } from '../../common/utils';
+
 const useCardStyles = makeStyles((_) => ({
     card: {
         width: 20,
@@ -51,10 +53,11 @@ const useCardStyles = makeStyles((_) => ({
     },
 }));
 
-const Card = ({ card, isTask = false, taskReq = {}, handleClick, isCurrent, hideHover = false }) => {
+const Card = ({ card, taskProps, handleClick, isCurrent, hideHover = false }) => {
+    const isTask = !!taskProps;
     const [isHover, setHover] = useState(false);
     const cardClasses = useCardStyles();
-    const { tooltip, symbol } = getTaskProps(taskReq);
+    const { tooltip, symbol } = getTaskProps(taskProps);
     const shouldShow = isCurrent || isTask;
 
     return (
@@ -68,7 +71,7 @@ const Card = ({ card, isTask = false, taskReq = {}, handleClick, isCurrent, hide
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
             title={isTask ? tooltip : ''}
-            {...(handleClick ? { onClick: () => handleClick(card, taskReq)} : {})}
+            {...(handleClick ? { onClick: () => handleClick(card, taskProps)} : {})}
         >
             {shouldShow && (
                 <>
@@ -85,31 +88,34 @@ Card.propTypes = {
         number: T.number.isRequired,
         color: T.string.isRequired,
     }),
-    isTask: T.bool,
-    taskReq: T.shape({
-        isFirst: T.bool,
+    taskProps: T.shape({
+        type: T.oneOf(Object.keys(TASK_TYPES)).isRequired,
         order: T.number,
-        isLast: T.bool,
     }),
     handleClick: T.func,
     isCurrent: T.bool,
     hideHover: T.bool,
 };
 
-function getTaskProps(taskReq) {
+function getTaskProps(taskProps) {
+    const { type, order } = taskProps;
     const props = { symbol: '' };
 
-    if (taskReq.isFirst) {
-        props.tooltip = 'This task must be completed first.';
-        props.symbol = '\u03B1';
-    } else if (taskReq.isLast) {
-        props.tooltip = 'This task must be completed last.';
-        props.symbol = '\u03A9';
-    } else if (taskReq.order) {
-        props.tooltip = 'This task must be done in order.';
-        props.symbol = '>'.repeat(taskReq.order);
-    } else {
-        props.tooltip = 'This task can be completed at any time.';
+    switch(type) {
+        case TASK_TYPES.FIRST:
+            props.tooltip = 'This task must be completed first.';
+            props.symbol = '\u03B1';
+            break;
+        case TASK_TYPES.LAST:
+            props.tooltip = 'This task must be completed last.';
+            props.symbol = '\u03A9';
+            break;
+        case TASK_TYPES.ORDERED:
+            props.tooltip = 'This task must be done in order.';
+            props.symbol = '>'.repeat(order + 1);
+            break;
+        default:
+            props.tooltip = 'This task can be completed at any time.';
     }
 
     return props;

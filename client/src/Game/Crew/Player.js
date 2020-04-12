@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { isEmpty } from 'lodash';
 
 import Card from './Card';
-import TasksList from './TasksList';
+import TaskList from './TaskList';
 
 import useStyles from '../../common/useStyles';
 import useCrewStyles from './useCrewStyles';
@@ -37,7 +37,7 @@ const Player = ({ user, tasks, isCurrent = false }) => {
                 ))}
             </div>
             {hasTasks && (
-                <TasksList tasks={tasks} title="Tasks to complete" />
+                <TaskList tasks={tasks} title="Tasks to complete" />
             )}
         </div>
     );
