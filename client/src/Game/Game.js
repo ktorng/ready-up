@@ -69,7 +69,7 @@ const Game = () => {
     const player = game.players.find((p) => p.userId === me.id);
 
     return (
-        <MeContext.Provider value={me}>
+        <MeContext.Provider value={{ ...me, playerId: player.id }}>
             <GameContext.Provider value={game}>
                 {game.status === 'IN_PROGRESS' ? (
                     <Layout me={me} player={player} />

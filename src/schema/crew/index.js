@@ -1,5 +1,5 @@
 const { gql, withFilter } = require('apollo-server');
-const { get } = require('lodash');
+const { get, isMatch } = require('lodash');
 
 const { generatePlayers, generateMission } = require('../../utils/crew');
 const { matchId } = require('../../utils/game');
@@ -121,7 +121,29 @@ module.exports = {
                     console.error(e);
                     return { success: false };
                 }
-            }
+            },
+            assignTask: async (_, { gameId, card }, { dataSources }) => {
+                try {
+                    let game = await dataSources.gameAPI.getGame({ id: gameId });
+                    const gameState = JSON.parse(game.gameState);
+                    gameState.tasks = gameState.tasks.map((task) => {
+                        if (isMatch(card, task.card)) {
+                            return { ...task, playerId: card.playerId }
+                        }
+                        return task;
+                    });
+
+                    game = await dataSources.gameAPI.updateGame({ gameState: JSON.stringify(gameState) }, { id: gameId });
+
+                    return {
+                        success: true,
+                        game
+                    };
+                } catch (e) {
+                    console.error(e);
+                    return { success: false };
+                }
+            },
         },
         Subscription: {
             crewGameStarted: {
