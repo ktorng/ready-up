@@ -35,6 +35,12 @@ module.exports = {
             color: String # ['R', 'G', 'B', 'Y', 'W']
         }
         
+        input CardInput {
+            number: Int!
+            color: String
+            playerId: ID!
+        }
+        
         type GameState {
             tasks: [Task]
             playerStates: [PlayerState]
@@ -66,6 +72,7 @@ module.exports = {
 
         extend type Mutation {
             startCrewGame(gameId: ID!): GameUpdateResponse!
+            assignTask(gameId: ID!, card: CardInput!): GameUpdateResponse!
         }
 
         extend type Subscription {

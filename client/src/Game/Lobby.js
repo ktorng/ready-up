@@ -8,6 +8,7 @@ import { useNavigate } from '@reach/router';
 import Header from './Header';
 import Player from './Player';
 import GameActions from './GameActions';
+import { useGameContext, useMeContext } from '../common/utils';
 
 import usePlayerStyles from './usePlayerStyles';
 import useStyles from '../common/useStyles';
@@ -20,9 +21,11 @@ const LEAVE_GAME = gql`
     }
 `;
 
-const Lobby = ({ me, game, subscribe, startCrewGame, player }) => {
+const Lobby = ({ subscribe, startCrewGame, player }) => {
     const classes = useStyles();
     const playerClasses = usePlayerStyles();
+    const game = useGameContext();
+    const me = useMeContext();
     const navigate = useNavigate();
     const [leaveGame] = useMutation(LEAVE_GAME, {
         variables: { gameId: game.id },
@@ -45,7 +48,7 @@ const Lobby = ({ me, game, subscribe, startCrewGame, player }) => {
 
     return (
         <div className={classes.containerCenter}>
-            <Header game={game} showAccessCode />
+            <Header showAccessCode />
             <div className={classNames(playerClasses.player, playerClasses.header)}>
                 <div className={playerClasses.name}>Name</div>
                 <div className={playerClasses.ready}>Ready</div>
@@ -75,8 +78,6 @@ const Lobby = ({ me, game, subscribe, startCrewGame, player }) => {
 };
 
 Lobby.propTypes = {
-    me: T.object,
-    game: T.object,
     subscribe: T.func.isRequired,
     startCrewGame: T.func.isRequired,
     player: T.object,

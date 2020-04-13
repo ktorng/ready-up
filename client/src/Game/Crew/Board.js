@@ -6,9 +6,11 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import TaskList from './TaskList';
 import Card from './Card';
+import { ASSIGN_TASK } from './actions';
 
 import useCrewStyles from './useCrewStyles';
 import useStyles from '../../common/useStyles';
+import { useMutation } from '@apollo/react-hooks';
 
 const useModalStyles = makeStyles((theme) => ({
     paper: {
@@ -31,6 +33,9 @@ const Board = ({ gameState, tasks }) => {
     const { turn } = gameState;
     const [open, setOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
+    const [assignTask] = useMutation(ASSIGN_TASK, {
+        variables: {}
+    })
 
     const handleClickCard = (card, taskProps) => {
         setOpen(true);
