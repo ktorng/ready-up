@@ -67,7 +67,6 @@ const Game = () => {
         subscribeToMore(gameSubscriptions.crewGameStarted(game.id));
         subscribeToMore(gameSubscriptions.taskAssigned(game.id));
     };
-    console.log(game.players)
     const player = game.players.find((p) => p.userId === me.id);
 
     return (

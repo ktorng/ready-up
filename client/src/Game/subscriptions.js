@@ -120,11 +120,7 @@ export const crewGameStarted = (gameId) => ({
     updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
 
-        console.log(subscriptionData.data.crewGameStarted.game)
-        const nextState = { ...prev, game: subscriptionData.data.crewGameStarted.game };
-
-        console.log(merge({}, nextState))
-        return merge({}, nextState);
+        return { ...prev, game: subscriptionData.data.crewGameStarted.game };
     },
 });
 
@@ -134,9 +130,9 @@ export const taskAssigned = (gameId) => ({
     updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
 
-        const nextState = { ...prev };
-        nextState.game.gameState = subscriptionData.data.taskAssigned.gameState;
-
-        return merge({}, nextState);
+        return {
+            ...prev,
+            game: { ...prev.game, gameState: subscriptionData.data.taskAssigned.gameState },
+        };
     },
 });

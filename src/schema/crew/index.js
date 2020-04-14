@@ -139,7 +139,6 @@ module.exports = {
                 try {
                     let game = await dataSources.gameAPI.getGame({ id: gameId });
                     const players = await dataSources.userAPI.getPlayers({ gameId });
-                    console.log(players);
                     const playerIndex = players.findIndex((p) => matchId(p.id, playerId));
                     const nextPlayer = players[(playerIndex + 1) % players.length];
                     const gameState = JSON.parse(game.gameState);
@@ -158,8 +157,6 @@ module.exports = {
                         { id: gameId }
                     );
 
-                    console.log(events)
-                    console.log('publishing event', gameId, gameState);
                     // emit event
                     await pubsub.publish(events.TASK_ASSIGNED, {
                         taskAssigned: { gameId, gameState },
@@ -186,12 +183,7 @@ module.exports = {
             taskAssigned: {
                 subscribe: withFilter(
                     () => pubsub.asyncIterator(events.TASK_ASSIGNED),
-                    (payload, variables) => {
-                        console.log(payload, variables);
-
-                        return true;
-                        // return matchId(payload.taskAssigned.gameId, variables.gameId)
-                    }
+                    (payload, variables) => matchId(payload.taskAssigned.gameId, variables.gameId)
                 ),
             },
         },
