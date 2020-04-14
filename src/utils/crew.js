@@ -43,10 +43,11 @@ module.exports = {
      * Generates a list of task objects which contain card and optional order
      *
      * @param count {number} - number of tasks
-     * @param taskReqs {Object} - task requirements; object of counts for each requirement
+     * @param reqs {Object} - task requirements; object of counts for each requirement
      * @returns {{}[]} dict of player id or "unassigned" to list of tasks
      */
-    generateMission: (count, taskReqs) => {
+    generateMission: (count, reqs) => {
+        const taskReqs = { ...reqs };
         const orderIndex = taskReqs[TASK_TYPES.ORDERED];
         const buildTask = (card, type, order) => ({
             card,

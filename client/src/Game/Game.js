@@ -7,6 +7,7 @@ import { get } from 'lodash';
 import Lobby from './Lobby';
 import { Layout } from './Crew';
 import * as gameSubscriptions from './subscriptions';
+import { GameContext, MeContext } from '../common/utils';
 import Loading from '../common/Loading';
 import { GAME_DATA, USER_DATA } from '../common/fragments';
 
@@ -53,31 +54,36 @@ const Game = () => {
         variables: { gameId: get(gameData, 'game.id') },
     });
 
-    // subscribe to game updates
-    const subscribe = (playerId) => {
-        subscribeToMore(gameSubscriptions.playerJoined(gameData.game.id));
-        subscribeToMore(gameSubscriptions.playerLeft(gameData.game.id, playerId));
-        subscribeToMore(gameSubscriptions.playerUpdated(gameData.game.id, playerId));
-        subscribeToMore(gameSubscriptions.crewGameStarted(gameData.game.id));
-    };
-
     if (loading) return <Loading />;
     if (error) return <p>ERROR</p>;
     if (!gameData) return <p>Not found</p>;
 
-    const player = gameData.game.players.find((p) => p.userId === me.id);
-
-    if (gameData.game.status === 'IN_PROGRESS')
-        return <Layout me={me} player={player} game={gameData.game} />;
+    // subscribe to game updates
+    const { game } = gameData;
+    const subscribe = (playerId) => {
+        subscribeToMore(gameSubscriptions.playerJoined(game.id));
+        subscribeToMore(gameSubscriptions.playerLeft(game.id, playerId));
+        subscribeToMore(gameSubscriptions.playerUpdated(game.id, playerId));
+        subscribeToMore(gameSubscriptions.crewGameStarted(game.id));
+        subscribeToMore(gameSubscriptions.taskAssigned(game.id));
+    };
+    const player = game.players.find((p) => p.userId === me.id);
 
     return (
-        <Lobby
-            me={me}
-            player={player}
-            game={gameData.game}
-            subscribe={subscribe}
-            startCrewGame={startCrewGame}
-        />
+        <MeContext.Provider value={{ ...me, playerId: player.id }}>
+            <GameContext.Provider value={game}>
+                {game.status === 'IN_PROGRESS' ? (
+                    <Layout me={me} subscribe={subscribe} />
+                ) : (
+                    <Lobby
+                        me={me}
+                        subscribe={subscribe}
+                        startCrewGame={startCrewGame}
+                    />
+
+                )}
+            </GameContext.Provider>
+        </MeContext.Provider>
     );
 };
 

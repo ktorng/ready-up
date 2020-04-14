@@ -4,14 +4,18 @@ import classNames from 'classnames';
 import { useLocation } from '@reach/router';
 import copy from 'copy-to-clipboard';
 import FileCopyOutlinedIcon from '@material-ui/icons/FileCopyOutlined';
+
+import { useGameContext } from '../common/utils';
+
 import useStyles from '../common/useStyles';
 
-const getStatus = (game, gameState) => {
+const getStatus = (game, gameState, me) => {
     if (game.status === 'WAITING') {
         return 'Waiting for players...';
     } else {
         const { turnPlayerId, turn } = gameState;
-        const currentPlayer = game.players.find(p => p.id === turnPlayerId);
+        // TODO: fix
+        const currentPlayer = game.players.find(p => p.id === turnPlayerId) || { name: 'fix this later' };
 
         return (
             <>
@@ -19,14 +23,16 @@ const getStatus = (game, gameState) => {
                     {turn ? `Turn: ${gameState.turn}` : 'Assigning Tasks...'}
                 </p>
                 <p style={{ marginTop: 0 }}>
-                    {`Waiting on player: ${currentPlayer.name}`}
+                    {me.id === currentPlayer.userId ? 'Waiting on you!' : `Waiting on player: ${currentPlayer.name}`}
                 </p>
             </>
         )
     }
 };
 
-const Header = ({ game, showAccessCode, gameState }) => {
+const Header = ({ showAccessCode, me }) => {
+    const game = useGameContext();
+    const { gameState } = game;
     const classes = useStyles();
     const location = useLocation();
 
@@ -45,15 +51,14 @@ const Header = ({ game, showAccessCode, gameState }) => {
                     </div>
                 </h3>
             )}
-            <h3 className={classNames(classes.containerCenter, classes.grey)}>{getStatus(game, gameState)}</h3>
+            <h3 className={classNames(classes.containerCenter, classes.grey)}>{getStatus(game, gameState, me)}</h3>
         </>
     );
 };
 
 Header.propTypes = {
-    game: T.object.isRequired,
     showAccessCode: T.bool,
-    gameState: T.object,
+    me: T.object,
 };
 
 export default Header;

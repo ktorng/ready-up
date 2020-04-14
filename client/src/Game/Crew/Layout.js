@@ -1,5 +1,4 @@
-import React from 'react';
-import T from 'prop-types';
+import React, { useEffect } from 'react';
 import classNames from 'classnames';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -7,6 +6,7 @@ import Board from './Board';
 import Player from './Player';
 import Header from '../Header';
 import { usePlayers } from './usePlayers';
+import { useGameContext, useMeContext } from '../../common/utils';
 
 import useStyles from '../../common/useStyles';
 
@@ -45,18 +45,29 @@ const useLayoutStyles = makeStyles((_) => ({
 
 const getTasks = (tasks, playerId) => tasks.filter(t => t.playerId === playerId);
 
-const Layout = ({ me, game }) => {
+const Layout = ({ subscribe }) => {
     const classes = useStyles();
     const layoutClasses = useLayoutStyles();
+    const game = useGameContext();
+    const me = useMeContext();
     const { gameState } = game;
     const { tasks } = gameState;
     // build ordered list of players
     const players = usePlayers(game, me);
 
+    /**
+     * Add subscriptions for player updates, game updates
+     */
+    useEffect(() => {
+        if (me) {
+            subscribe(me.playerId);
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     return (
         <div className={classNames(classes.containerCenter, classes.stretch)}>
             <div className={classes.containerCenter}>
-                <Header game={game} gameState={gameState} />
+                <Header me={me} />
             </div>
             <div className={layoutClasses.game}>
                 <div className={classNames(layoutClasses.playerTop, layoutClasses.border)}>
@@ -98,11 +109,6 @@ const Layout = ({ me, game }) => {
             </div>
         </div>
     );
-};
-
-Layout.propTypes = {
-    me: T.object,
-    game: T.object.isRequired
 };
 
 export default Layout;

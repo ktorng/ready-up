@@ -17,6 +17,7 @@ export const usePlayers = (game, me) => {
         const myPlayerIndex = players.findIndex(p => p.userId === me.id);
 
         return merge(
+            [],
             [...players.slice(myPlayerIndex), ...players.slice(0, myPlayerIndex)],
             [...playerStates.slice(myPlayerIndex), ...playerStates.slice(0, myPlayerIndex)]
         );

@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { merge, mergeWith } from 'lodash';
-import { PLAYER_DATA, GAME_DATA } from '../common/fragments';
+import { PLAYER_DATA, GAME_DATA, GAME_STATE_DATA } from '../common/fragments';
 
 const PLAYER_JOINED = gql`
     subscription playerJoined($gameId: ID!) {
@@ -43,6 +43,17 @@ const CREW_GAME_STARTED = gql`
         }
     }
     ${GAME_DATA}
+`;
+
+const TASK_ASSIGNED = gql`
+    subscription taskAssigned($gameId: ID!) {
+        taskAssigned(gameId: $gameId) {
+            gameState {
+                ...GameStateData
+            }
+        }
+    }
+    ${GAME_STATE_DATA}
 `;
 
 export const playerJoined = (gameId) => ({
@@ -109,8 +120,19 @@ export const crewGameStarted = (gameId) => ({
     updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
 
-        const nextState = { ...prev, game: subscriptionData.data.crewGameStarted.game };
+        return { ...prev, game: subscriptionData.data.crewGameStarted.game };
+    },
+});
 
-        return merge({}, nextState);
+export const taskAssigned = (gameId) => ({
+    document: TASK_ASSIGNED,
+    variables: { gameId },
+    updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+
+        return {
+            ...prev,
+            game: { ...prev.game, gameState: subscriptionData.data.taskAssigned.gameState },
+        };
     },
 });
