@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import classNames from 'classnames';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -45,7 +45,7 @@ const useLayoutStyles = makeStyles((_) => ({
 
 const getTasks = (tasks, playerId) => tasks.filter(t => t.playerId === playerId);
 
-const Layout = () => {
+const Layout = ({ subscribe }) => {
     const classes = useStyles();
     const layoutClasses = useLayoutStyles();
     const game = useGameContext();
@@ -54,6 +54,15 @@ const Layout = () => {
     const { tasks } = gameState;
     // build ordered list of players
     const players = usePlayers(game, me);
+
+    /**
+     * Add subscriptions for player updates, game updates
+     */
+    useEffect(() => {
+        if (me) {
+            subscribe(me.playerId);
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div className={classNames(classes.containerCenter, classes.stretch)}>

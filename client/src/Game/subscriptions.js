@@ -120,8 +120,10 @@ export const crewGameStarted = (gameId) => ({
     updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
 
+        console.log(subscriptionData.data.crewGameStarted.game)
         const nextState = { ...prev, game: subscriptionData.data.crewGameStarted.game };
 
+        console.log(merge({}, nextState))
         return merge({}, nextState);
     },
 });
@@ -130,7 +132,6 @@ export const taskAssigned = (gameId) => ({
     document: TASK_ASSIGNED,
     variables: { gameId },
     updateQuery: (prev, { subscriptionData }) => {
-        console.log(subscriptionData)
         if (!subscriptionData.data) return prev;
 
         const nextState = { ...prev };

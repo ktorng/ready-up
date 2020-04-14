@@ -96,22 +96,21 @@ module.exports = {
     resolvers: {
         Mutation: {
             startCrewGame: async (_, { gameId }, { dataSources }) => {
-                const players = await dataSources.userAPI.getPlayers({ gameId });
-                const playerStates = generatePlayers(players.map((p) => p.id));
-                const commanderPlayerId = get(
-                    playerStates.find((p) => p.isCommander),
-                    'playerId'
-                );
-                const tasks = generateMission(5, mockTaskReqs);
-                // generate game state
-                const gameState = {
-                    tasks,
-                    playerStates,
-                    turn: 0, // 0: mission assignment, -1: complete, 1+: player turns
-                    turnPlayerId: commanderPlayerId,
-                };
-
                 try {
+                    const players = await dataSources.userAPI.getPlayers({ gameId });
+                    const playerStates = generatePlayers(players.map((p) => p.id));
+                    const commanderPlayerId = get(
+                        playerStates.find((p) => p.isCommander),
+                        'playerId'
+                    );
+                    const tasks = generateMission(5, mockTaskReqs);
+                    // generate game state
+                    const gameState = {
+                        tasks,
+                        playerStates,
+                        turn: 0, // 0: mission assignment, -1: complete, 1+: player turns
+                        turnPlayerId: commanderPlayerId,
+                    };
                     const game = await dataSources.gameAPI.updateGame(
                         {
                             status: 'IN_PROGRESS',
@@ -159,6 +158,7 @@ module.exports = {
                         { id: gameId }
                     );
 
+                    console.log(events)
                     console.log('publishing event', gameId, gameState);
                     // emit event
                     await pubsub.publish(events.TASK_ASSIGNED, {

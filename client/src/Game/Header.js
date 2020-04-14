@@ -14,7 +14,8 @@ const getStatus = (game, gameState, me) => {
         return 'Waiting for players...';
     } else {
         const { turnPlayerId, turn } = gameState;
-        const currentPlayer = game.players.find(p => p.id === turnPlayerId);
+        // TODO: fix
+        const currentPlayer = game.players.find(p => p.id === turnPlayerId) || { name: 'fix this later' };
 
         return (
             <>

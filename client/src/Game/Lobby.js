@@ -21,7 +21,7 @@ const LEAVE_GAME = gql`
     }
 `;
 
-const Lobby = ({ subscribe, startCrewGame, player }) => {
+const Lobby = ({ subscribe, startCrewGame }) => {
     const classes = useStyles();
     const playerClasses = usePlayerStyles();
     const game = useGameContext();
@@ -35,6 +35,7 @@ const Lobby = ({ subscribe, startCrewGame, player }) => {
             }
         }
     });
+    const player = game.players.find(p => p.userId === me.id);
     const isStartDisabled = game.players.some(player => player.status !== 'READY');
 
     /**
@@ -80,7 +81,6 @@ const Lobby = ({ subscribe, startCrewGame, player }) => {
 Lobby.propTypes = {
     subscribe: T.func.isRequired,
     startCrewGame: T.func.isRequired,
-    player: T.object,
 };
 
 export default Lobby;

@@ -67,17 +67,17 @@ const Game = () => {
         subscribeToMore(gameSubscriptions.crewGameStarted(game.id));
         subscribeToMore(gameSubscriptions.taskAssigned(game.id));
     };
+    console.log(game.players)
     const player = game.players.find((p) => p.userId === me.id);
 
     return (
         <MeContext.Provider value={{ ...me, playerId: player.id }}>
             <GameContext.Provider value={game}>
                 {game.status === 'IN_PROGRESS' ? (
-                    <Layout me={me} player={player} />
+                    <Layout me={me} subscribe={subscribe} />
                 ) : (
                     <Lobby
                         me={me}
-                        player={player}
                         subscribe={subscribe}
                         startCrewGame={startCrewGame}
                     />
