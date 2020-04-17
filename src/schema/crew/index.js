@@ -75,7 +75,7 @@ module.exports = {
 
         extend type Mutation {
             startCrewGame(gameId: ID!): GameUpdateResponse!
-            assignTask(gameId: ID!, card: CardInput!): GameUpdateResponse!
+            assignTask(gameId: ID!, card: CardInput!, isLast: Boolean!): GameUpdateResponse!
         }
 
         extend type Subscription {
@@ -133,14 +133,12 @@ module.exports = {
                     return { success: false };
                 }
             },
-            assignTask: async (_, { gameId, card }, { dataSources }) => {
+            assignTask: async (_, { gameId, card, isLast }, { dataSources }) => {
                 const { playerId } = card;
 
                 try {
                     let game = await dataSources.gameAPI.getGame({ id: gameId });
                     const players = await dataSources.userAPI.getPlayers({ gameId });
-                    const playerIndex = players.findIndex((p) => matchId(p.id, playerId));
-                    const nextPlayer = players[(playerIndex + 1) % players.length];
                     const gameState = JSON.parse(game.gameState);
                     // update tasks
                     gameState.tasks = gameState.tasks.map((task) => {
@@ -149,8 +147,15 @@ module.exports = {
                         }
                         return task;
                     });
-                    // update next player
-                    gameState.turnPlayerId = nextPlayer.id;
+                    // if last task, start actual game turn and set turn player to commander
+                    if (isLast) {
+                        const commanderIndex = gameState.playerStates.findIndex(p => p.isCommander);
+                        gameState.turnPlayerId = players[commanderIndex].id;
+                        gameState.turn = 1;
+                    } else {
+                        const playerIndex = players.findIndex(p => matchId(p.id, playerId));
+                        gameState.turnPlayerId = players[(playerIndex + 1) % players.length].id;
+                    }
 
                     game = await dataSources.gameAPI.updateGame(
                         { gameState: JSON.stringify(gameState) },

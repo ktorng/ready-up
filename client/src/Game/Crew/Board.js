@@ -46,7 +46,11 @@ const Board = ({ gameState, tasks }) => {
     const handleConfirmAssignTask = () => {
         const { color, number } = selectedTask.card;
         assignTask({
-            variables: { gameId: game.id, card: { color, number, playerId: me.playerId } },
+            variables: {
+                gameId: game.id,
+                card: { color, number, playerId: me.playerId },
+                isLast: tasks.length === 1
+            },
         });
         setOpen(false);
     };
