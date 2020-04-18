@@ -197,7 +197,7 @@ module.exports = {
 
                     // if last card of round, check round winner
                     if (rounds[rounds.length - 1] === players.length) {
-                        const { isLost, isWon, tasks } = checkGameState(game.gameState.played);
+                        const { isLost, isWon, winnerId, tasks } = checkGameState(game.gameState.played);
 
                         gameState.tasks = tasks;
 
@@ -211,6 +211,9 @@ module.exports = {
                             ...ps,
                             played: null
                         })));
+
+                        gameState.turn++;
+                        gameState.turnPlayerId = winnerId;
                     }
 
                     game = await dataSources.gameAPI.updateGame(

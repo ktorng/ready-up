@@ -164,6 +164,7 @@ module.exports = {
         }
 
         gameState.tasks = merge([], tasks, completedTasks);
+        gameState.winnerId = winner.playerId;
 
         return gameState;
     },

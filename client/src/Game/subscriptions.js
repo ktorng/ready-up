@@ -56,6 +56,17 @@ const TASK_ASSIGNED = gql`
     ${GAME_STATE_DATA}
 `;
 
+const CARD_PLAYED = gql`
+    subscription cardPlayed($gameId: ID!) {
+        cardPlayed(gameId: $gameId) {
+            gameState {
+                ...GameStateData
+            }
+        }
+    }
+    ${GAME_STATE_DATA}
+`;
+
 export const playerJoined = (gameId) => ({
     document: PLAYER_JOINED,
     variables: { gameId },
@@ -133,6 +144,19 @@ export const taskAssigned = (gameId) => ({
         return {
             ...prev,
             game: { ...prev.game, gameState: subscriptionData.data.taskAssigned.gameState },
+        };
+    },
+});
+
+export const cardPlayed = (gameId) => ({
+    document: CARD_PLAYED,
+    variables: { gameId },
+    updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+
+        return {
+            ...prev,
+            game: { ...prev.game, gameState: subscriptionData.data.cardPlayed.gameState },
         };
     },
 });

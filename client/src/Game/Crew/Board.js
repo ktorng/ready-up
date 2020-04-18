@@ -1,42 +1,26 @@
 import React, { useState } from 'react';
 import T from 'prop-types';
-import Modal from '@material-ui/core/Modal';
-import Button from '@material-ui/core/Button';
-import { makeStyles } from '@material-ui/core/styles';
 
 import TaskList from './TaskList';
 import Card from './Card';
+import ConfirmModal from './ConfirmModal';
 import { ASSIGN_TASK } from './actions';
 import { useGameContext, useMeContext } from '../../common/utils';
 
 import useCrewStyles from './useCrewStyles';
-import useStyles from '../../common/useStyles';
 import { useMutation } from '@apollo/react-hooks';
 
-const useModalStyles = makeStyles((theme) => ({
-    paper: {
-        position: 'absolute',
-        width: 400,
-        backgroundColor: theme.palette.background.paper,
-        border: '2px solid #000',
-        boxShadow: theme.shadows[5],
-        padding: theme.spacing(2, 4, 3),
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-    },
-}));
-
 const Board = ({ gameState, tasks }) => {
-    const classes = useStyles();
     const crewClasses = useCrewStyles();
-    const modalClasses = useModalStyles();
     const game = useGameContext();
     const me = useMeContext();
     const { turn } = gameState;
     const [open, setOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
     const [assignTask] = useMutation(ASSIGN_TASK);
+    const {
+        gameState: { playerStates, rounds },
+    } = game;
 
     const handleClickCard = (card, taskProps) => {
         setOpen(true);
@@ -49,7 +33,7 @@ const Board = ({ gameState, tasks }) => {
             variables: {
                 gameId: game.id,
                 card: { color, number, playerId: me.playerId },
-                isLast: tasks.length === 1
+                isLast: tasks.length === 1,
             },
         });
         setOpen(false);
@@ -62,37 +46,37 @@ const Board = ({ gameState, tasks }) => {
             {!turn ? (
                 <TaskList tasks={tasks} title="Assign Tasks" handleClickCard={handleClickCard} />
             ) : (
-                'Game in progress'
+                <div>
+                    <h4>Game in progress</h4>
+                    <h5>Rounds</h5>
+                    {rounds.map((round, i) => (
+                        <div key={`round-${i}`}>
+                            {round.map((card, j) => (
+                                <Card
+                                    key={`round-${i}-card-${j}`}
+                                    card={card}
+                                    hideHover
+                                />
+                            ))}
+                        </div>
+                    ))}
+                    <h5>Current round</h5>
+                    {playerStates
+                        .filter((ps) => !!ps.played)
+                        .map((ps, i) => (
+                            <Card
+                                key={`cr-card-${i}`}
+                                card={ps.played}
+                                hideHover
+                            />
+                        ))}
+                </div>
             )}
             {open && (
-                <Modal open={open} onClose={handleClose}>
-                    <div className={modalClasses.paper}>
-                        <h4>Are you sure you want to take this task?</h4>
-                        <Card
-                            card={selectedTask.card}
-                            taskProps={selectedTask.taskProps}
-                            hideHover
-                        />
-                        <div>
-                            <Button
-                                className={classes.button}
-                                variant="outlined"
-                                color="primary"
-                                onClick={handleConfirmAssignTask}
-                            >
-                                Yes
-                            </Button>
-                            <Button
-                                className={classes.button}
-                                variant="outlined"
-                                color="secondary"
-                                onClick={handleClose}
-                            >
-                                Nevermind
-                            </Button>
-                        </div>
-                    </div>
-                </Modal>
+                <ConfirmModal open={open} onConfirm={handleConfirmAssignTask} onClose={handleClose}>
+                    <h4>Are you sure you want to take this task?</h4>
+                    <Card card={selectedTask.card} taskProps={selectedTask.taskProps} hideHover />
+                </ConfirmModal>
             )}
         </div>
     );

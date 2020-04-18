@@ -16,3 +16,18 @@ export const ASSIGN_TASK = gql`
     }
     ${GAME_STATE_DATA}
 `;
+
+export const PLAY_CARD = gql`
+    mutation assignTask($gameId: ID!, $card: CardInput!) {
+        assignTask(gameId: $gameId, card: $card) {
+            success
+            game {
+                id
+                gameState {
+                    ...GameStateData
+                }
+            }
+        }
+    }
+    ${GAME_STATE_DATA}
+`;
