@@ -1,7 +1,7 @@
 const { gql, withFilter } = require('apollo-server');
 const { get, isMatch } = require('lodash');
 
-const { generatePlayers, generateMission } = require('../../utils/crew');
+const { generatePlayers, generateMission, checkGameState } = require('../../utils/crew');
 const { matchId } = require('../../utils/game');
 const {
     store: { pubsub },
@@ -10,6 +10,7 @@ const {
 const events = {
     CREW_GAME_STARTED: 'CREW_GAME_STARTED',
     TASK_ASSIGNED: 'TASK_ASSIGNED',
+    CARD_PLAYED: 'CARD_PLAYED',
 };
 // TODO: move into util that gets task requirements based on mission number
 const mockTaskReqs = {
@@ -36,6 +37,7 @@ module.exports = {
         type Card {
             number: Int!
             color: String # ['R', 'G', 'B', 'Y', 'W']
+            playerId: ID # player who played this card
         }
 
         input CardInput {
@@ -49,12 +51,15 @@ module.exports = {
             playerStates: [PlayerState]
             turn: Int
             turnPlayerId: ID
+            rounds: [[Card]]
+            isLost: Boolean
         }
 
         type PlayerState {
             hand: [Card]!
             isCommander: Boolean!
             playerId: ID
+            played: Card
         }
 
         extend type Game {
@@ -76,11 +81,13 @@ module.exports = {
         extend type Mutation {
             startCrewGame(gameId: ID!): GameUpdateResponse!
             assignTask(gameId: ID!, card: CardInput!, isLast: Boolean!): GameUpdateResponse!
+            playCard(gameId: ID!, card: CardInput!): GameUpdateResponse
         }
 
         extend type Subscription {
             crewGameStarted(gameId: ID!): CrewGameStartedPayload
             taskAssigned(gameId: ID!): GameStateUpdatedPayload
+            cardPlayed(gameId: ID!): GameStateUpdatedPayload
         }
 
         type CrewGameStartedPayload {
@@ -110,6 +117,7 @@ module.exports = {
                         playerStates,
                         turn: 0, // 0: mission assignment, -1: complete, 1+: player turns
                         turnPlayerId: commanderPlayerId,
+                        isLost: false
                     };
                     const game = await dataSources.gameAPI.updateGame(
                         {
@@ -176,6 +184,56 @@ module.exports = {
                     return { success: false };
                 }
             },
+            playCard: async (_, { gameId, card }, { dataSources }) => {
+                try {
+                    let game = await dataSources.gameAPI.getGame({ id: gameId });
+                    const players = await dataSources.userAPI.getPlayers({ gameId });
+                    const playerIndex = players.findIndex(p => p.id = card.playerId);
+                    const gameState = JSON.parse(game.gameState);
+                    const { rounds } = gameState;
+
+                    rounds[rounds.length - 1].push(card);
+                    gameState.playerStates[playerIndex].played = card;
+
+                    // if last card of round, check round winner
+                    if (rounds[rounds.length - 1] === players.length) {
+                        const { isLost, isWon, tasks } = checkGameState(game.gameState.played);
+
+                        gameState.tasks = tasks;
+
+                        if (isLost || isWon) {
+                            gameState.turn = -1;
+                            gameState.isLost = isLost;
+                        }
+
+                        // reset player played
+                        gameState.playerStates = gameState.playerStates.map((ps => ({
+                            ...ps,
+                            played: null
+                        })));
+                    }
+
+                    game = await dataSources.gameAPI.updateGame(
+                        { gameState: JSON.stringify(gameState) },
+                        { id: gameId }
+                    );
+                    // TODO: delete
+                    console.log(gameState);
+
+                    // emit event
+                    await pubsub.publish(events.CARD_PLAYED, {
+                        cardPlayed: { gameId, gameState },
+                    });
+
+                    return {
+                        success: true,
+                        game,
+                    };
+                } catch (e) {
+                    console.error(e);
+                    return { success: false };
+                }
+            },
         },
         Subscription: {
             crewGameStarted: {
@@ -189,6 +247,12 @@ module.exports = {
                 subscribe: withFilter(
                     () => pubsub.asyncIterator(events.TASK_ASSIGNED),
                     (payload, variables) => matchId(payload.taskAssigned.gameId, variables.gameId)
+                ),
+            },
+            cardPlayed: {
+                subscribe: withFilter(
+                    () => pubsub.asyncIterator(events.CARD_PLAYED),
+                    (payload, variables) => matchId(payload.cardPlayed.gameId, variables.gameId)
                 ),
             },
         },
