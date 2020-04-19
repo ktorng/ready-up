@@ -10,16 +10,15 @@ import { useGameContext, useMeContext } from '../../common/utils';
 import useCrewStyles from './useCrewStyles';
 import { useMutation } from '@apollo/react-hooks';
 
-const Board = ({ gameState, tasks }) => {
+const Board = ({ tasks }) => {
     const crewClasses = useCrewStyles();
     const game = useGameContext();
     const me = useMeContext();
-    const { turn } = gameState;
     const [open, setOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
     const [assignTask] = useMutation(ASSIGN_TASK);
     const {
-        gameState: { playerStates, rounds },
+        gameState: { playerStates, rounds, turn, isLost },
     } = game;
 
     const handleClickCard = (card, taskProps) => {
@@ -41,6 +40,14 @@ const Board = ({ gameState, tasks }) => {
 
     const handleClose = () => setOpen(false);
 
+    if (turn === -1) {
+        return (
+            <div className={crewClasses.boardContainer}>
+                {isLost ? 'You lose!' : 'You win!'}
+            </div>
+        );
+    }
+
     return (
         <div className={crewClasses.boardContainer}>
             {!turn ? (
@@ -49,27 +56,33 @@ const Board = ({ gameState, tasks }) => {
                 <div>
                     <h4>Game in progress</h4>
                     <h5>Rounds</h5>
-                    {rounds.map((round, i) => (
-                        <div key={`round-${i}`}>
-                            {round.map((card, j) => (
+                    {rounds
+                        .filter((round) => round.cards.length === game.players.length)
+                        .map((round, i) => (
+                            <div key={`round-${i}`} className={crewClasses.cardContainer}>
+                                {round.cards.map((card, j) => (
+                                    <Card
+                                        key={`round-${i}-card-${j}`}
+                                        card={card}
+                                        hideHover
+                                        shouldShow
+                                    />
+                                ))}
+                            </div>
+                        ))}
+                    <h5>Current round</h5>
+                    <div className={crewClasses.cardContainer}>
+                        {playerStates
+                            .filter((ps) => !!ps.played)
+                            .map((ps, i) => (
                                 <Card
-                                    key={`round-${i}-card-${j}`}
-                                    card={card}
+                                    key={`cr-card-${i}`}
+                                    card={ps.played}
                                     hideHover
+                                    shouldShow
                                 />
                             ))}
-                        </div>
-                    ))}
-                    <h5>Current round</h5>
-                    {playerStates
-                        .filter((ps) => !!ps.played)
-                        .map((ps, i) => (
-                            <Card
-                                key={`cr-card-${i}`}
-                                card={ps.played}
-                                hideHover
-                            />
-                        ))}
+                    </div>
                 </div>
             )}
             {open && (
@@ -83,7 +96,6 @@ const Board = ({ gameState, tasks }) => {
 };
 
 Board.propTypes = {
-    gameState: T.object.isRequired,
     tasks: T.array, // unassigned tasks
 };
 

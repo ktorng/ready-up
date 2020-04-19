@@ -14,8 +14,7 @@ const events = {
 };
 // TODO: move into util that gets task requirements based on mission number
 const mockTaskReqs = {
-    UNORDERED: 3,
-    ORDERED: 2,
+    UNORDERED: 1,
 };
 
 // TODO: split into separate schema files
@@ -25,7 +24,7 @@ module.exports = {
             card: Card
             order: Int
             playerId: ID
-            isCompleted: Boolean!
+            isCompleted: Boolean
             type: TaskType # for special mission types
         }
 
@@ -51,8 +50,13 @@ module.exports = {
             playerStates: [PlayerState]
             turn: Int
             turnPlayerId: ID
-            rounds: [[Card]]
+            rounds: [Round]
             isLost: Boolean
+        }
+        
+        type Round {
+            cards: [Card]
+            winnerId: ID
         }
 
         type PlayerState {
@@ -110,14 +114,15 @@ module.exports = {
                         playerStates.find((p) => p.isCommander),
                         'playerId'
                     );
-                    const tasks = generateMission(5, mockTaskReqs);
+                    const tasks = generateMission(2, mockTaskReqs);
                     // generate game state
                     const gameState = {
                         tasks,
                         playerStates,
                         turn: 0, // 0: mission assignment, -1: complete, 1+: player turns
                         turnPlayerId: commanderPlayerId,
-                        isLost: false
+                        isLost: false,
+                        rounds: [{ cards: [] }]
                     };
                     const game = await dataSources.gameAPI.updateGame(
                         {
@@ -188,40 +193,47 @@ module.exports = {
                 try {
                     let game = await dataSources.gameAPI.getGame({ id: gameId });
                     const players = await dataSources.userAPI.getPlayers({ gameId });
-                    const playerIndex = players.findIndex(p => p.id = card.playerId);
+                    const playerIndex = players.findIndex(p => matchId(p.id, card.playerId));
                     const gameState = JSON.parse(game.gameState);
-                    const { rounds } = gameState;
+                    const cardIndex = gameState.playerStates[playerIndex].hand.findIndex(c => isMatch(card, c));
+                    let { rounds } = gameState;
 
-                    rounds[rounds.length - 1].push(card);
-                    gameState.playerStates[playerIndex].played = card;
+                    rounds[rounds.length - 1].cards.push(card);
+                    gameState.playerStates[playerIndex].played = gameState.playerStates[playerIndex].hand.splice(cardIndex, 1)[0];
+                    // update to next player
+                    gameState.turnPlayerId = players[(playerIndex + 1) % players.length].id;
 
                     // if last card of round, check round winner
-                    if (rounds[rounds.length - 1] === players.length) {
-                        const { isLost, isWon, winnerId, tasks } = checkGameState(game.gameState.played);
+                    if (rounds[rounds.length - 1].cards.length === players.length) {
+                        console.log(checkGameState(rounds[rounds.length - 1].cards, gameState.tasks))
+                        const { isLost, isWon, winnerId, tasks } = checkGameState(rounds[rounds.length - 1].cards, gameState.tasks);
 
-                        gameState.tasks = tasks;
-
-                        if (isLost || isWon) {
-                            gameState.turn = -1;
-                            gameState.isLost = isLost;
-                        }
+                        rounds[rounds.length - 1].winnerId = winnerId;
+                        rounds.push({ cards: [] })
 
                         // reset player played
                         gameState.playerStates = gameState.playerStates.map((ps => ({
                             ...ps,
                             played: null
                         })));
-
+                        gameState.tasks = tasks;
                         gameState.turn++;
                         gameState.turnPlayerId = winnerId;
+
+                        // end game
+                        if (isLost || isWon) {
+                            gameState.turn = -1;
+                            gameState.isLost = isLost;
+                        }
                     }
+
+                    // update round state
+                    gameState.rounds = rounds;
 
                     game = await dataSources.gameAPI.updateGame(
                         { gameState: JSON.stringify(gameState) },
                         { id: gameId }
                     );
-                    // TODO: delete
-                    console.log(gameState);
 
                     // emit event
                     await pubsub.publish(events.CARD_PLAYED, {

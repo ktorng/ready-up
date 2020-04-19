@@ -18,8 +18,8 @@ export const ASSIGN_TASK = gql`
 `;
 
 export const PLAY_CARD = gql`
-    mutation assignTask($gameId: ID!, $card: CardInput!) {
-        assignTask(gameId: $gameId, card: $card) {
+    mutation playCard($gameId: ID!, $card: CardInput!) {
+        playCard(gameId: $gameId, card: $card) {
             success
             game {
                 id

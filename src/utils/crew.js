@@ -1,4 +1,4 @@
-const { merge } = require('lodash');
+const { merge, isMatch } = require('lodash');
 
 const { COLORS, ROCKETS, NUMBERS, TASK_TYPES } = require('./constants');
 
@@ -11,7 +11,7 @@ module.exports = {
      * @returns {{}[]} list of player hands
      */
     generatePlayers: (playerIds) => {
-        const players = [...Array(4)].map(() => ({ isCommander: false, hand: [] }));
+        const players = [...Array(playerIds.length)].map(() => ({ isCommander: false, hand: [] }));
         const cards = COLORS.reduce(
             (tot, color) => [
                 ...tot,
@@ -23,7 +23,7 @@ module.exports = {
         while (cards.length) {
             // random index and player index
             const i = Math.floor(Math.random() * cards.length);
-            const j = cards.length % 4;
+            const j = cards.length % playerIds.length;
 
             // swap to end
             const temp = cards[i];
@@ -105,15 +105,18 @@ module.exports = {
             null
         );
 
-        const gameState = { isLost: false, isWon: false };
+        const gameState = { isLost: false, isWon: false, winnerId: winner.playerId };
 
         const isTaskCompleted = (task) =>
-            currentRound.some(
-                (card) =>
-                    card.color === task.color &&
-                    card.number === task.number &&
-                    winner.playerId === task.playerId
-            );
+            currentRound.some((card) => {
+                if (isMatch(card, task.card)) {
+                    if (winner.playerId === task.playerId) {
+                        return true;
+                    }
+                    // task was completed by wrong player
+                    gameState.isLost = true;
+                }
+            });
 
         const completedTasks = [...Array(tasks.length)].map((_, i) => ({
             isCompleted: tasks[i].isCompleted || isTaskCompleted(tasks[i]), // completed this round or previously
@@ -122,6 +125,7 @@ module.exports = {
         // check if:
         // * tasks have been completed before first
         if (
+            !gameState.isLost &&
             tasks.some(
                 (task, i) => task.type === TASK_TYPES.FIRST && !completedTasks[i].isCompleted
             )
@@ -132,6 +136,7 @@ module.exports = {
         }
         // * last was completed while other tasks remaining
         if (
+            !gameState.isLost &&
             tasks.some((task, i) => task.type === TASK_TYPES.LAST && completedTasks[i].isCompleted)
         ) {
             gameState.isLost = tasks.some(
@@ -140,22 +145,26 @@ module.exports = {
         }
         // * ordered task done out of order
         if (
+            !gameState.isLost &&
             tasks.some(
                 (task, i) => task.type === TASK_TYPES.ORDERED && completedTasks[i].isCompleted
             )
         ) {
             // lose if max complete ordered task is greater than min incomplete ordered task
-            const [a, b] = tasks.reduce(((acc, task, i) => {
-                if (task.type === TASK_TYPES.ORDERED) {
-                    const [max, min] = acc;
+            const [a, b] = tasks.reduce(
+                (acc, task, i) => {
+                    if (task.type === TASK_TYPES.ORDERED) {
+                        const [max, min] = acc;
 
-                    return [
-                        completedTasks[i].isCompleted ? Math.max(max, task.order) : max,
-                        !completedTasks[i].isCompleted ? Math.min(min, task.order) : min,
-                    ];
-                }
-                return acc;
-            }), [-Infinity, Infinity]);
+                        return [
+                            completedTasks[i].isCompleted ? Math.max(max, task.order) : max,
+                            !completedTasks[i].isCompleted ? Math.min(min, task.order) : min,
+                        ];
+                    }
+                    return acc;
+                },
+                [-Infinity, Infinity]
+            );
             gameState.isLost = a > b;
         }
         // * all tasks completed
@@ -164,7 +173,6 @@ module.exports = {
         }
 
         gameState.tasks = merge([], tasks, completedTasks);
-        gameState.winnerId = winner.playerId;
 
         return gameState;
     },

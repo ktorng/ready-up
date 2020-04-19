@@ -31,7 +31,7 @@ const CurrentPlayer = ({ player, tasks }) => {
     };
 
     const handleConfirmPlayCard = () => {
-        const { color, number } = selectedCard.card;
+        const { color, number } = selectedCard;
         playCard({
             variables: {
                 gameId: game.id,
@@ -72,6 +72,7 @@ const CurrentPlayer = ({ player, tasks }) => {
                     <Card
                         card={selectedCard}
                         hideHover
+                        isCurrent
                     />
                 </ConfirmModal>
             )}
