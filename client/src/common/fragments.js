@@ -23,6 +23,7 @@ export const GAME_STATE_DATA = gql`
             playerId
             type
             order
+            isCompleted
         }
         playerStates {
             hand {
@@ -31,9 +32,22 @@ export const GAME_STATE_DATA = gql`
             }
             isCommander
             playerId
+            played {
+                color
+                number
+            }
+        }
+        rounds {
+            cards {
+                color
+                number
+                playerId
+            }
+            winnerId
         }
         turn
         turnPlayerId
+        isLost
     }
 `;
 

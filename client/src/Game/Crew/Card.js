@@ -41,6 +41,10 @@ const useCardStyles = makeStyles((_) => ({
     W: {
         backgroundColor: grey[200],
     },
+    isCompleted: {
+        backgroundColor: grey[700],
+        color: grey[50],
+    },
     hover: {
         border: '1px solid black',
         cursor: 'pointer',
@@ -54,27 +58,35 @@ const useCardStyles = makeStyles((_) => ({
     },
 }));
 
-const Card = ({ card, taskProps = {}, handleClick, isCurrent, hideHover = false }) => {
+const Card = ({
+    card,
+    taskProps = {},
+    handleClick,
+    isCurrent,
+    hideHover = false,
+    shouldShow = false,
+}) => {
     const isTask = !isEmpty(taskProps);
     const [isHover, setHover] = useState(false);
     const cardClasses = useCardStyles();
     const { tooltip, symbol } = getTaskProps(taskProps);
-    const shouldShow = isCurrent || isTask;
+    const isShown = isCurrent || isTask || shouldShow;
 
     return (
         <div
             className={classNames(cardClasses.card, {
-                [cardClasses.hover]: shouldShow && isHover && !hideHover,
+                [cardClasses.hover]: isShown && isHover && !hideHover,
                 [cardClasses.task]: isTask,
                 [cardClasses.current]: isCurrent,
-                [cardClasses[card.color]]: shouldShow
+                [cardClasses[card.color]]: isShown,
+                [cardClasses.isCompleted]: isTask && taskProps.isCompleted,
             })}
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
             title={isTask ? tooltip : ''}
-            {...(handleClick ? { onClick: () => handleClick(card, taskProps)} : {})}
+            {...(handleClick ? { onClick: () => handleClick(card, taskProps) } : {})}
         >
-            {shouldShow && (
+            {isShown && (
                 <>
                     <div>{card.number}</div>
                     {isTask && <div className={cardClasses.taskSymbol}>{symbol}</div>}
@@ -99,10 +111,10 @@ Card.propTypes = {
 };
 
 function getTaskProps(taskProps) {
-    const { type, order } = taskProps;
+    const { type, order, isCompleted } = taskProps;
     const props = { symbol: '' };
 
-    switch(type) {
+    switch (type) {
         case TASK_TYPES.FIRST:
             props.tooltip = 'This task must be completed first.';
             props.symbol = '\u03B1';
@@ -117,6 +129,11 @@ function getTaskProps(taskProps) {
             break;
         default:
             props.tooltip = 'This task can be completed at any time.';
+    }
+
+    if (isCompleted) {
+        props.tooltip = 'This task has been completed';
+        props.symbol = '\u2713';
     }
 
     return props;

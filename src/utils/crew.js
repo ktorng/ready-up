@@ -1,3 +1,5 @@
+const { merge, isMatch } = require('lodash');
+
 const { COLORS, ROCKETS, NUMBERS, TASK_TYPES } = require('./constants');
 
 module.exports = {
@@ -9,7 +11,7 @@ module.exports = {
      * @returns {{}[]} list of player hands
      */
     generatePlayers: (playerIds) => {
-        const players = [...Array(4)].map(() => ({ isCommander: false, hand: [] }));
+        const players = [...Array(playerIds.length)].map(() => ({ isCommander: false, hand: [] }));
         const cards = COLORS.reduce(
             (tot, color) => [
                 ...tot,
@@ -21,7 +23,7 @@ module.exports = {
         while (cards.length) {
             // random index and player index
             const i = Math.floor(Math.random() * cards.length);
-            const j = cards.length % 4;
+            const j = cards.length % playerIds.length;
 
             // swap to end
             const temp = cards[i];
@@ -103,52 +105,75 @@ module.exports = {
             null
         );
 
-        const gameState = {
-            isLost: false,
-            tasks,
-        };
+        const gameState = { isLost: false, isWon: false, winnerId: winner.playerId };
 
         const isTaskCompleted = (task) =>
-            currentRound.some(
-                (card) =>
-                    card.color === task.color &&
-                    card.number === task.number &&
-                    winner.userId === task.userId
+            currentRound.some((card) => {
+                if (isMatch(card, task.card)) {
+                    if (winner.playerId === task.playerId) {
+                        return true;
+                    }
+                    // task was completed by wrong player
+                    gameState.isLost = true;
+                }
+            });
+
+        const completedTasks = [...Array(tasks.length)].map((_, i) => ({
+            isCompleted: tasks[i].isCompleted || isTaskCompleted(tasks[i]), // completed this round or previously
+        }));
+
+        // check if:
+        // * tasks have been completed before first
+        if (
+            !gameState.isLost &&
+            tasks.some(
+                (task, i) => task.type === TASK_TYPES.FIRST && !completedTasks[i].isCompleted
+            )
+        ) {
+            gameState.isLost = tasks.some(
+                (task, i) => task.type !== TASK_TYPES.FIRST && completedTasks[i].isCompleted
             );
+        }
+        // * last was completed while other tasks remaining
+        if (
+            !gameState.isLost &&
+            tasks.some((task, i) => task.type === TASK_TYPES.LAST && completedTasks[i].isCompleted)
+        ) {
+            gameState.isLost = tasks.some(
+                (task, i) => task.type !== TASK_TYPES.LAST && !completedTasks[i].isCompleted
+            );
+        }
+        // * ordered task done out of order
+        if (
+            !gameState.isLost &&
+            tasks.some(
+                (task, i) => task.type === TASK_TYPES.ORDERED && completedTasks[i].isCompleted
+            )
+        ) {
+            // lose if max complete ordered task is greater than min incomplete ordered task
+            const [a, b] = tasks.reduce(
+                (acc, task, i) => {
+                    if (task.type === TASK_TYPES.ORDERED) {
+                        const [max, min] = acc;
 
-        // check if unordered task has been completed
-        let i = tasks.unordered.findIndex(isTaskCompleted);
-        if (i > -1) {
-            tasks.unordered.splice(i, 1);
-            if (tasks.first) {
-                gameState.isLost = true;
-            }
-            return gameState;
+                        return [
+                            completedTasks[i].isCompleted ? Math.max(max, task.order) : max,
+                            !completedTasks[i].isCompleted ? Math.min(min, task.order) : min,
+                        ];
+                    }
+                    return acc;
+                },
+                [-Infinity, Infinity]
+            );
+            gameState.isLost = a > b;
+        }
+        // * all tasks completed
+        if (tasks.every((task, i) => completedTasks[i].isCompleted)) {
+            gameState.isWon = true;
         }
 
-        // check if ordered task has been completed
-        i = tasks.ordered.findIndex(isTaskCompleted);
-        if (i > -1) {
-            tasks.ordered.splice(i, 1);
-            if (i > 0 || tasks.first) {
-                gameState.isLost = true;
-            }
-            return gameState;
-        }
+        gameState.tasks = merge([], tasks, completedTasks);
 
-        // check first
-        if (tasks.first && isTaskCompleted(tasks.first)) {
-            tasks.first = null;
-            return gameState;
-        }
-
-        // check last
-        if (tasks.last && isTaskCompleted(tasks.last)) {
-            tasks.last = null;
-            if (tasks.unordered.length || tasks.ordered.length || tasks.first) {
-                gameState.isLost = true;
-            }
-            return gameState;
-        }
+        return gameState;
     },
 };

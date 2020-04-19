@@ -88,7 +88,7 @@ const Layout = ({ subscribe }) => {
                         )}
                     </div>
                     <div className={layoutClasses.board}>
-                        <Board gameState={gameState} tasks={getTasks(tasks, null)} />
+                        <Board tasks={getTasks(tasks, null)} />
                     </div>
                     <div className={classNames(layoutClasses.playerVertical)}>
                         {players[3] && (

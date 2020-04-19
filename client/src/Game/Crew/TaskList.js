@@ -3,7 +3,7 @@ import T from 'prop-types';
 import classNames from 'classnames';
 
 import Card from './Card';
-import { TASK_TYPES } from '../../common/utils';
+import { TASK_TYPES, useGameContext, useMeContext } from '../../common/utils';
 
 import useCrewStyles from './useCrewStyles';
 import useStyles from '../../common/useStyles';
@@ -11,6 +11,9 @@ import useStyles from '../../common/useStyles';
 const TaskList = ({ tasks, title, handleClickCard }) => {
     const classes = useStyles();
     const crewClasses = useCrewStyles();
+    const game = useGameContext();
+    const me = useMeContext();
+    const isCurrentTurn = game.gameState.turnPlayerId === me.playerId;
 
     return (
         <div className={crewClasses.playerContainer}>
@@ -25,8 +28,9 @@ const TaskList = ({ tasks, title, handleClickCard }) => {
                         taskProps={{
                             type: task.type,
                             order: task.order,
+                            isCompleted: task.isCompleted,
                         }}
-                        handleClick={handleClickCard}
+                        {...(isCurrentTurn ? { handleClick: handleClickCard } : { hideHover: true })}
                     />
                 ))}
             </div>
