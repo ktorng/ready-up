@@ -14,12 +14,12 @@ import { merge } from 'lodash';
 export const usePlayers = (game, me) => {
     return useMemo(() => {
         const { players, gameState: { playerStates } } = game;
-        const myPlayerIndex = players.findIndex(p => p.userId === me.id);
+        const myPlayerIndex = players.findIndex(p => p.id === me.playerId);
 
         return merge(
             [],
             [...players.slice(myPlayerIndex), ...players.slice(0, myPlayerIndex)],
             [...playerStates.slice(myPlayerIndex), ...playerStates.slice(0, myPlayerIndex)]
         );
-    }, [game, me.id]);
+    }, [game, me.playerId]);
 };

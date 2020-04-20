@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 import { useParams } from '@reach/router';
@@ -42,6 +42,7 @@ const START_CREW_GAME = gql`
 `;
 
 const Game = () => {
+    const [playerIdDebug, setPlayerIdDebug] = useState(null);
     const { accessCode } = useParams();
     const { data: gameData, loading, error, subscribeToMore } = useQuery(GET_GAME, {
         variables: { accessCode },
@@ -70,8 +71,10 @@ const Game = () => {
     };
     const player = game.players.find((p) => p.userId === me.id);
 
+    const setPlayerId = (playerId) => setPlayerIdDebug(playerId);
+
     return (
-        <MeContext.Provider value={{ ...me, playerId: player.id }}>
+        <MeContext.Provider value={{ ...me, playerId: playerIdDebug || player.id, setPlayerId }}>
             <GameContext.Provider value={game}>
                 {game.status === 'IN_PROGRESS' ? (
                     <Layout me={me} subscribe={subscribe} />
