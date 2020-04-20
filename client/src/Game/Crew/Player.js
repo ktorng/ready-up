@@ -4,6 +4,7 @@ import classNames from 'classnames';
 
 import Card from './Card';
 import TaskList from './TaskList';
+import { useGameContext, useMeContext } from '../../common/utils';
 
 import useStyles from '../../common/useStyles';
 import useCrewStyles from './useCrewStyles';
@@ -12,6 +13,8 @@ import CurrentPlayer from './CurrentPlayer';
 const Player = (props) => {
     const classes = useStyles();
     const crewClasses = useCrewStyles();
+    const game = useGameContext();
+    const me = useMeContext();
     const { player, tasks } = props;
     const { id } = player;
 
@@ -20,7 +23,10 @@ const Player = (props) => {
     }
     return (
         <div className={crewClasses.playerContainer}>
-            <h4 className={classNames(classes.bold, classes.noMargin)}>
+            <h4
+                className={classNames(classes.bold, classes.noMargin)}
+                {...(game.type === 'DEBUG' ? { onClick: () => me.setPlayerId(id) } : {})}
+            >
                 {player.name}
             </h4>
             <div className={crewClasses.cardContainer}>

@@ -1,7 +1,10 @@
 const { DataSource } = require('apollo-datasource');
 const { get, pick } = require('lodash');
 
-const { game: { generateAccessCode }, selectors } = require('../utils');
+const {
+    game: { generateAccessCode },
+    selectors,
+} = require('../utils');
 
 class GameAPI extends DataSource {
     constructor({ store }) {
@@ -18,7 +21,7 @@ class GameAPI extends DataSource {
         this.context = config.context;
     }
 
-    async createGame({ size, name, description }) {
+    async createGame({ size, name, description, type }) {
         const userId = get(this.context, 'user.id');
 
         if (!userId) return;
@@ -30,6 +33,7 @@ class GameAPI extends DataSource {
                 name,
                 description,
                 accessCode,
+                type,
             });
 
             await this.store.gameUsers.create({
@@ -73,20 +77,33 @@ class GameAPI extends DataSource {
     /**
      * Creates a join record for gameId and current userId and returns the player
      */
-    async joinGame({ gameId }) {
+    async joinGame({ gameId }, allowDuplicate = false) {
         const userId = get(this.context, 'user.id');
 
         if (!userId) return;
 
-        const players = await this.store.gameUsers.findOrCreate({
-            where: { gameId, userId },
-        });
+        const players = allowDuplicate
+            ? await this.store.gameUsers.create(
+                  {
+                      gameId,
+                      userId,
+                  },
+                  { returning: true }
+              )
+            : await this.store.gameUsers.findOrCreate({
+                  where: { gameId, userId },
+              });
         const player = players && players[0];
 
-        return selectors.playerReducer(await this.store.gameUsers.findOne({
-            where: { id: player.id },
-            include: [this.store.users],
-        }));
+        if (allowDuplicate) {
+            return;
+        }
+        return selectors.playerReducer(
+            await this.store.gameUsers.findOne({
+                where: { id: player.id },
+                include: [this.store.users],
+            })
+        );
     }
 
     /**

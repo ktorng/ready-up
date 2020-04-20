@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import classNames from 'classnames';
 import { makeStyles } from '@material-ui/core/styles';
+import red from '@material-ui/core/colors/red';
 
 import Board from './Board';
 import Player from './Player';
@@ -41,6 +42,10 @@ const useLayoutStyles = makeStyles((_) => ({
     border: {
         border: '1px solid gray',
     },
+    commander: {
+        border: '2px solid',
+        borderColor: red[500],
+    }
 }));
 
 const getTasks = (tasks, playerId) => tasks.filter(t => t.playerId === playerId);
@@ -70,7 +75,11 @@ const Layout = ({ subscribe }) => {
                 <Header me={me} />
             </div>
             <div className={layoutClasses.game}>
-                <div className={classNames(layoutClasses.playerTop, layoutClasses.border)}>
+                <div className={classNames(
+                    layoutClasses.playerTop,
+                    layoutClasses.border,
+                    { [layoutClasses.commander]: players[2].isCommander },
+                )}>
                     {players[2] && (
                         <Player
                             player={players[2]}
@@ -79,7 +88,10 @@ const Layout = ({ subscribe }) => {
                     )}
                 </div>
                 <div className={layoutClasses.mid}>
-                    <div className={classNames(layoutClasses.playerVertical)}>
+                    <div className={classNames(
+                        layoutClasses.playerVertical,
+                        { [layoutClasses.commander]: players[1].isCommander },
+                    )}>
                         {players[1] && (
                             <Player
                                 player={players[1]}
@@ -90,7 +102,10 @@ const Layout = ({ subscribe }) => {
                     <div className={layoutClasses.board}>
                         <Board tasks={getTasks(tasks, null)} />
                     </div>
-                    <div className={classNames(layoutClasses.playerVertical)}>
+                    <div className={classNames(
+                        layoutClasses.playerVertical,
+                        { [layoutClasses.commander]: players[3].isCommander },
+                    )}>
                         {players[3] && (
                             <Player
                                 player={players[3]}
@@ -99,7 +114,11 @@ const Layout = ({ subscribe }) => {
                         )}
                     </div>
                 </div>
-                <div className={classNames(layoutClasses.player, layoutClasses.border)}>
+                <div className={classNames(
+                    layoutClasses.player,
+                    layoutClasses.border,
+                    { [layoutClasses.commander]: players[0].isCommander },
+                )}>
                     <Player
                         player={players[0]}
                         tasks={getTasks(tasks, players[0].id)}

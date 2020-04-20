@@ -13,6 +13,7 @@ const schema = gql`
         description: String!
         size: Int!
         players: [Player]! # list of player objects associated with this game id
+        type: GameType
     }
 
     extend type Query {
@@ -47,6 +48,7 @@ const schema = gql`
     }
 
     enum GameType {
+        DEBUG
         CREW
     }
 `;
@@ -66,7 +68,12 @@ const resolvers = {
     },
     Mutation: {
         createGame: async (_, { name, size, description }, { dataSources }) => {
-            const game = await dataSources.gameAPI.createGame({ size, name, description });
+            const game = await dataSources.gameAPI.createGame({
+                size,
+                name,
+                description,
+                type: name === 'debug' ? 'DEBUG' : 'CREW',
+            });
 
             return {
                 success: !!game,
