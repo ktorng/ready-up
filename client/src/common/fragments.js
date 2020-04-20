@@ -77,6 +77,7 @@ export const GAME_DATA = gql`
         players {
             ...PlayerData
         }
+        type
     }
     ${PLAYER_DATA}
     ${GAME_STATE_DATA}

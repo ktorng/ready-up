@@ -78,6 +78,11 @@ const createStore = () => {
             allowNull: false,
             defaultValue: ''
         },
+        type: {
+            type: Sequelize.STRING,
+            allowNull: false,
+            defaultValue: 'CREW'
+        },
         gameState: Sequelize.JSON,
     });
 

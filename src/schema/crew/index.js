@@ -108,13 +108,23 @@ module.exports = {
         Mutation: {
             startCrewGame: async (_, { gameId }, { dataSources }) => {
                 try {
+                    /**
+                     * For debugging. TODO: delete
+                     */
+                    let game = await dataSources.gameAPI.getGame({ id: gameId });
+                    if (game.name === 'debug') {
+                        await dataSources.gameAPI.joinGame({ gameId }, true);
+                        await dataSources.gameAPI.joinGame({ gameId }, true);
+                        await dataSources.gameAPI.joinGame({ gameId }, true);
+                    }
+
                     const players = await dataSources.userAPI.getPlayers({ gameId });
                     const playerStates = generatePlayers(players.map((p) => p.id));
                     const commanderPlayerId = get(
                         playerStates.find((p) => p.isCommander),
                         'playerId'
                     );
-                    const tasks = generateMission(2, mockTaskReqs);
+                    const tasks = generateMission(1, mockTaskReqs);
                     // generate game state
                     const gameState = {
                         tasks,
@@ -124,7 +134,7 @@ module.exports = {
                         isLost: false,
                         rounds: [{ cards: [] }]
                     };
-                    const game = await dataSources.gameAPI.updateGame(
+                    game = await dataSources.gameAPI.updateGame(
                         {
                             status: 'IN_PROGRESS',
                             gameState: JSON.stringify(gameState),
