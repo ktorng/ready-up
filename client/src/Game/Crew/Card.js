@@ -45,6 +45,9 @@ const useCardStyles = makeStyles((_) => ({
         backgroundColor: grey[700],
         color: grey[50],
     },
+    isPlayable: {
+        border: `1px solid ${green[300]}`,
+    },
     hover: {
         border: '1px solid black',
         cursor: 'pointer',
@@ -80,6 +83,7 @@ const Card = ({
                 [cardClasses.current]: isCurrent,
                 [cardClasses[card.color]]: isShown,
                 [cardClasses.isCompleted]: isTask && taskProps.isCompleted,
+                [cardClasses.isPlayable]: !isTask && !!handleClick,
             })}
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}

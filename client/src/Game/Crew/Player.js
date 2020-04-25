@@ -7,7 +7,7 @@ import TaskList from './TaskList';
 import { useGameContext, useMeContext } from '../../common/utils';
 
 import useStyles from '../../common/useStyles';
-import useCrewStyles from './useCrewStyles';
+import useCrewStyles from './hooks/useCrewStyles';
 import CurrentPlayer from './CurrentPlayer';
 
 const Player = (props) => {

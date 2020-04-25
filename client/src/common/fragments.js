@@ -42,6 +42,7 @@ export const GAME_STATE_DATA = gql`
                 color
                 number
                 playerId
+                isLead
             }
             winnerId
         }
