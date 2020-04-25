@@ -4,6 +4,7 @@ import classNames from 'classnames';
 
 import Card from './Card';
 import TaskList from './TaskList';
+import PlayedCard from './PlayedCard';
 import { useGameContext, useMeContext } from '../../common/utils';
 
 import useStyles from '../../common/useStyles';
@@ -16,7 +17,7 @@ const Player = (props) => {
     const game = useGameContext();
     const me = useMeContext();
     const { player, tasks } = props;
-    const { id } = player;
+    const { id, played } = player;
 
     if (props.isCurrent) {
         return <CurrentPlayer {...props} />;
@@ -41,6 +42,7 @@ const Player = (props) => {
             {!!tasks.length && (
                 <TaskList tasks={tasks} title="Tasks to complete" />
             )}
+            {played && <PlayedCard card={played} />}
         </div>
     );
 };

@@ -6,6 +6,7 @@ import { useMutation } from '@apollo/react-hooks';
 import Card from './Card';
 import TaskList from './TaskList';
 import ConfirmModal from './ConfirmModal';
+import PlayedCard from './PlayedCard';
 import { PLAY_CARD } from './actions';
 import { useHand } from './hooks/useHand';
 import { useGameContext, useMeContext } from '../../common/utils';
@@ -60,6 +61,7 @@ const CurrentPlayer = ({ player, tasks }) => {
             {!!tasks.length && (
                 <TaskList tasks={tasks} title="Tasks to complete" />
             )}
+            {player.played && <PlayedCard card={player.played} />}
             {open && (
                 <ConfirmModal
                     open={open}
