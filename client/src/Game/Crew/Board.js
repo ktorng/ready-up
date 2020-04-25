@@ -7,7 +7,7 @@ import ConfirmModal from './ConfirmModal';
 import { ASSIGN_TASK } from './actions';
 import { useGameContext, useMeContext } from '../../common/utils';
 
-import useCrewStyles from './useCrewStyles';
+import useCrewStyles from './hooks/useCrewStyles';
 import { useMutation } from '@apollo/react-hooks';
 
 const Board = ({ tasks }) => {

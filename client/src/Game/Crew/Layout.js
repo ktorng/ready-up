@@ -2,11 +2,12 @@ import React, { useEffect } from 'react';
 import classNames from 'classnames';
 import { makeStyles } from '@material-ui/core/styles';
 import red from '@material-ui/core/colors/red';
+import green from '@material-ui/core/colors/green';
 
 import Board from './Board';
 import Player from './Player';
 import Header from '../Header';
-import { usePlayers } from './usePlayers';
+import { usePlayers } from './hooks/usePlayers';
 import { useGameContext, useMeContext } from '../../common/utils';
 
 import useStyles from '../../common/useStyles';
@@ -45,7 +46,10 @@ const useLayoutStyles = makeStyles((_) => ({
     commander: {
         border: '2px solid',
         borderColor: red[500],
-    }
+    },
+    currentTurnPlayer: {
+        backgroundColor: green[100],
+    },
 }));
 
 const getTasks = (tasks, playerId) => tasks.filter(t => t.playerId === playerId);
@@ -56,7 +60,7 @@ const Layout = ({ subscribe }) => {
     const game = useGameContext();
     const me = useMeContext();
     const { gameState } = game;
-    const { tasks } = gameState;
+    const { tasks, turnPlayerId } = gameState;
     // build ordered list of players
     const players = usePlayers(game, me);
 
@@ -78,7 +82,10 @@ const Layout = ({ subscribe }) => {
                 <div className={classNames(
                     layoutClasses.playerTop,
                     layoutClasses.border,
-                    { [layoutClasses.commander]: players[2].isCommander },
+                    {
+                        [layoutClasses.commander]: players[2].isCommander,
+                        [layoutClasses.currentTurnPlayer]: players[2].id === turnPlayerId,
+                    },
                 )}>
                     {players[2] && (
                         <Player
@@ -90,7 +97,10 @@ const Layout = ({ subscribe }) => {
                 <div className={layoutClasses.mid}>
                     <div className={classNames(
                         layoutClasses.playerVertical,
-                        { [layoutClasses.commander]: players[1].isCommander },
+                        {
+                            [layoutClasses.commander]: players[1].isCommander,
+                            [layoutClasses.currentTurnPlayer]: players[1].id === turnPlayerId,
+                        },
                     )}>
                         {players[1] && (
                             <Player
@@ -104,7 +114,10 @@ const Layout = ({ subscribe }) => {
                     </div>
                     <div className={classNames(
                         layoutClasses.playerVertical,
-                        { [layoutClasses.commander]: players[3].isCommander },
+                        {
+                            [layoutClasses.commander]: players[3].isCommander,
+                            [layoutClasses.currentTurnPlayer]: players[3].id === turnPlayerId,
+                        },
                     )}>
                         {players[3] && (
                             <Player
@@ -117,7 +130,10 @@ const Layout = ({ subscribe }) => {
                 <div className={classNames(
                     layoutClasses.player,
                     layoutClasses.border,
-                    { [layoutClasses.commander]: players[0].isCommander },
+                    {
+                        [layoutClasses.commander]: players[0].isCommander,
+                        [layoutClasses.currentTurnPlayer]: players[0].id === turnPlayerId,
+                    },
                 )}>
                     <Player
                         player={players[0]}

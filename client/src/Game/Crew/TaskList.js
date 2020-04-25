@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import Card from './Card';
 import { TASK_TYPES, useGameContext, useMeContext } from '../../common/utils';
 
-import useCrewStyles from './useCrewStyles';
+import useCrewStyles from './hooks/useCrewStyles';
 import useStyles from '../../common/useStyles';
 
 const TaskList = ({ tasks, title, handleClickCard }) => {

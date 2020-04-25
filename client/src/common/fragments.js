@@ -35,6 +35,7 @@ export const GAME_STATE_DATA = gql`
             played {
                 color
                 number
+                isLead
             }
         }
         rounds {
@@ -42,6 +43,7 @@ export const GAME_STATE_DATA = gql`
                 color
                 number
                 playerId
+                isLead
             }
             winnerId
         }

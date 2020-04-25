@@ -37,6 +37,7 @@ module.exports = {
             number: Int!
             color: String # ['R', 'G', 'B', 'Y', 'W']
             playerId: ID # player who played this card
+            isLead: Boolean
         }
 
         input CardInput {
@@ -208,14 +209,18 @@ module.exports = {
                     const cardIndex = gameState.playerStates[playerIndex].hand.findIndex(c => isMatch(card, c));
                     let { rounds } = gameState;
 
+                    // mark current card as lead of this round
+                    if (!rounds[rounds.length - 1].cards.length) {
+                        card.isLead = true;
+                    }
                     rounds[rounds.length - 1].cards.push(card);
-                    gameState.playerStates[playerIndex].played = gameState.playerStates[playerIndex].hand.splice(cardIndex, 1)[0];
+                    gameState.playerStates[playerIndex].hand.splice(cardIndex, 1);
+                    gameState.playerStates[playerIndex].played = card;
                     // update to next player
                     gameState.turnPlayerId = players[(playerIndex + 1) % players.length].id;
 
                     // if last card of round, check round winner
                     if (rounds[rounds.length - 1].cards.length === players.length) {
-                        console.log(checkGameState(rounds[rounds.length - 1].cards, gameState.tasks))
                         const { isLost, isWon, winnerId, tasks } = checkGameState(rounds[rounds.length - 1].cards, gameState.tasks);
 
                         rounds[rounds.length - 1].winnerId = winnerId;
