@@ -1,1 +1,1 @@
-web: npm run build --prefix client && node src/index.js
+web: node src/index.js

@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node bin/reset && nodemon --watch src src/index.js",
     "lint": "eslint --fix .",
-    "postinstall": "npm install --prefix client"
+    "build:client": "npm run build --prefix client"
   },
   "author": "",
   "license": "ISC",
