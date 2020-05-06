@@ -17,7 +17,7 @@ module.exports = {
         extend type Mutation {
             login(name: String, email: String!): LoginResponse
         }
-
+        
         type LoginResponse {
             token: String
             user: User

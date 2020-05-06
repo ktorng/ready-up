@@ -1,5 +1,6 @@
 import React from 'react';
 import T from 'prop-types';
+import classNames from 'classnames';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 import VpnKeyOutlinedIcon from '@material-ui/icons/VpnKeyOutlined';
@@ -26,7 +27,7 @@ const Player = ({ game, player, isCurrent }) => {
     const [updatePlayer] = useMutation(UPDATE_PLAYER);
 
     return (
-        <div className={classes.player}>
+        <div className={classNames(classes.player, { [classes.disconnected]: player.status === 'DISCONNECTED' })}>
             <div className={classes.name}>
                 <span title={player.email}>
                     {player.name}

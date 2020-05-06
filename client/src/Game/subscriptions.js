@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { merge, mergeWith } from 'lodash';
+import { mergeWith } from 'lodash';
 import { PLAYER_DATA, GAME_DATA, GAME_STATE_DATA } from '../common/fragments';
 
 const PLAYER_JOINED = gql`
@@ -32,6 +32,15 @@ const PLAYER_UPDATED = gql`
         }
     }
     ${PLAYER_DATA}
+`;
+
+const PLAYER_CONNECTION = gql`
+    subscription playerConnection($gameId: ID!) {
+        playerConnection(gameId: $gameId) {
+            userId
+            isConnected
+        }
+    }
 `;
 
 const CREW_GAME_STARTED = gql`
@@ -116,12 +125,38 @@ export const playerUpdated = (gameId, currentPlayerId) => ({
         if (!subscriptionData.data) return prev;
 
         const { player: playerUpdated } = subscriptionData.data.playerUpdated;
-        const nextState = { ...prev };
-        nextState.game.players = nextState.game.players.map((player) =>
-            player.id === playerUpdated.id ? playerUpdated : player
-        );
 
-        return merge({}, nextState);
+        return {
+            game: {
+                ...prev.game,
+                players: prev.game.players.map((player) =>
+                    player.id === playerUpdated.id ? playerUpdated : player
+                ),
+            },
+        };
+    },
+});
+
+export const playerConnection = (gameId) => ({
+    document: PLAYER_CONNECTION,
+    variables: { gameId },
+    updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        console.log(subscriptionData);
+
+        const { userId, isConnected } = subscriptionData.data.playerConnection;
+
+        // TODO: actually update this on backend
+        return {
+            game: {
+                ...prev.game,
+                players: prev.game.players.map((player) =>
+                    player.userId === userId && !isConnected
+                        ? { ...player, status: 'DISCONNECTED', statusMessage: 'This player is currently disconnected.' }
+                        : player
+                ),
+            },
+        };
     },
 });
 

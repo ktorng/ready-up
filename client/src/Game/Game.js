@@ -65,6 +65,7 @@ const Game = () => {
         subscribeToMore(gameSubscriptions.playerJoined(game.id));
         subscribeToMore(gameSubscriptions.playerLeft(game.id, playerId));
         subscribeToMore(gameSubscriptions.playerUpdated(game.id, playerId));
+        subscribeToMore(gameSubscriptions.playerConnection(game.id));
         subscribeToMore(gameSubscriptions.crewGameStarted(game.id));
         subscribeToMore(gameSubscriptions.taskAssigned(game.id));
         subscribeToMore(gameSubscriptions.cardPlayed(game.id));

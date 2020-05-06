@@ -6,6 +6,7 @@ const { get } = require('lodash');
 const isEmail = require('isemail');
 
 const schema = require('./schema');
+const { events } = require('./schema/player');
 const store = require('./utils/store');
 
 const UserAPI = require('./datasources/user');
@@ -57,7 +58,16 @@ const server = new ApolloServer({
         path: '/subscriptions',
         onConnect: async (connectionParams, socket) => {
             const socketKey = get(socket, ['upgradeReq', 'headers', 'sec-websocket-key']);
+            const user = await getUser(connectionParams.auth);
             console.log('User connected with socket key: ', socketKey);
+
+            if (user) {
+                console.log('User reconnected with id: ', user.id);
+                // TODO: reconnect
+                // await store.pubsub.publish(events.PLAYER_CONNECTION, {
+                //     playerConnection: { id: user.id, isConnected: true },
+                // });
+            }
 
             return {
                 dataSources: dataSources(),
@@ -65,12 +75,24 @@ const server = new ApolloServer({
             };
         },
         onDisconnect: async (socket, context) => {
-            const { socketKey } = await context.initPromise;
+            const { socketKey, dataSources } = await context.initPromise;
             const user = get(socketUsers, socketKey);
 
             try {
                 if (user) {
                     console.log('User disconnected with id: ', user.id);
+                    const players = await dataSources.userAPI.getPlayers({ userId: user.id });
+                    // if user is currently in any games
+                    if (players.length) {
+                        const payload = {
+                            playerConnection: {
+                                gameIds: players.map(p => p.gameId),
+                                userId: user.id,
+                                isConnected: false
+                            },
+                        };
+                        await store.pubsub.publish(events.PLAYER_CONNECTION, payload);
+                    }
                 }
                 delete socketUsers[socketKey];
             } catch (e) {
