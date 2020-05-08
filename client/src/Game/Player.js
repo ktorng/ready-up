@@ -27,7 +27,7 @@ const Player = ({ game, player, isCurrent }) => {
     const [updatePlayer] = useMutation(UPDATE_PLAYER);
 
     return (
-        <div className={classNames(classes.player, { [classes.disconnected]: player.status === 'DISCONNECTED' })}>
+        <div className={classNames(classes.player, { [classes.disconnected]: !isCurrent && player.status === 'DISCONNECTED' })}>
             <div className={classes.name}>
                 <span title={player.email}>
                     {player.name}

@@ -59,36 +59,56 @@ const server = new ApolloServer({
         onConnect: async (connectionParams, socket) => {
             const socketKey = get(socket, ['upgradeReq', 'headers', 'sec-websocket-key']);
             const user = await getUser(connectionParams.auth);
+            const ds = dataSources();
             console.log('User connected with socket key: ', socketKey);
 
-            if (user) {
-                console.log('User reconnected with id: ', user.id);
-                // TODO: reconnect
-                // await store.pubsub.publish(events.PLAYER_CONNECTION, {
-                //     playerConnection: { id: user.id, isConnected: true },
-                // });
+            try {
+                if (user) {
+                    console.log('User reconnected with id: ', user.id);
+                    const players = await ds.userAPI.getPlayers({ userId: user.id });
+                    // if user is currently in any games
+                    // reconnect currently is naive does not check that user's view is on the game
+                    if (players.length) {
+                        await ds.userAPI.updatePlayer(
+                            { status: 'WAITING' },
+                            { userId: user.id }
+                        );
+                        const payload = {
+                            playerConnection: {
+                                gameIds: players.map((p) => p.gameId),
+                                userId: user.id,
+                                isConnected: true,
+                            },
+                        };
+                        await store.pubsub.publish(events.PLAYER_CONNECTION, payload);
+                    }
+                }
+            } catch (e) {
+                console.error(e);
             }
 
-            return {
-                dataSources: dataSources(),
-                socketKey,
-            };
+            return { dataSources: ds, socketKey };
         },
         onDisconnect: async (socket, context) => {
             const { socketKey, dataSources } = await context.initPromise;
             const user = get(socketUsers, socketKey);
 
             try {
+                // TODO: set some timeout, in case user reconnects immediately
                 if (user) {
                     console.log('User disconnected with id: ', user.id);
                     const players = await dataSources.userAPI.getPlayers({ userId: user.id });
                     // if user is currently in any games
                     if (players.length) {
+                        await dataSources.userAPI.updatePlayer(
+                            { status: 'DISCONNECTED' },
+                            { userId: user.id }
+                        );
                         const payload = {
                             playerConnection: {
-                                gameIds: players.map(p => p.gameId),
+                                gameIds: players.map((p) => p.gameId),
                                 userId: user.id,
-                                isConnected: false
+                                isConnected: false,
                             },
                         };
                         await store.pubsub.publish(events.PLAYER_CONNECTION, payload);

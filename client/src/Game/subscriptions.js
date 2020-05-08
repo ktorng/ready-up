@@ -146,13 +146,16 @@ export const playerConnection = (gameId) => ({
 
         const { userId, isConnected } = subscriptionData.data.playerConnection;
 
-        // TODO: actually update this on backend
         return {
             game: {
                 ...prev.game,
                 players: prev.game.players.map((player) =>
-                    player.userId === userId && !isConnected
-                        ? { ...player, status: 'DISCONNECTED', statusMessage: 'This player is currently disconnected.' }
+                    player.userId === userId
+                        ? {
+                            ...player,
+                            status: isConnected ? 'WAITING' : 'DISCONNECTED',
+                            statusMessage: isConnected ? '' : 'This player is currently disconnected.',
+                        }
                         : player
                 ),
             },
