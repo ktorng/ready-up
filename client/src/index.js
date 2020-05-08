@@ -50,6 +50,14 @@ const httpLink = authLink.concat(
     })
 );
 
+// add auth token to subscription context
+const subscriptionMiddleware = {
+    applyMiddleware: async (options, next) => {
+        options.auth = await localStorage.getItem('readyup-token');
+        next();
+    },
+}
+
 // websocket link to subscriptions
 const wsLink = new WebSocketLink({
     uri:
@@ -57,9 +65,14 @@ const wsLink = new WebSocketLink({
             ? 'wss://readyup-crew.herokuapp.com/subscriptions'
             : 'ws://localhost:8000/subscriptions',
     options: {
-        reconnect: true
-    }
+        reconnect: true,
+        connectionParams: () => ({
+            auth: localStorage.getItem('readyup-token'),
+        }),
+    },
 });
+
+wsLink.subscriptionClient.use([subscriptionMiddleware]);
 
 // split links to send data to each link based on operation type
 const link = split(

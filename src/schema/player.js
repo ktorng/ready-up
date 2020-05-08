@@ -1,11 +1,15 @@
 const { gql, withFilter } = require('apollo-server');
 
-const { store: { pubsub }, game: { matchId }} = require('../utils');
+const {
+    store: { pubsub },
+    game: { matchId, containsId },
+} = require('../utils');
 
 const events = {
     PLAYER_JOINED: 'PLAYER_JOINED',
     PLAYER_LEFT: 'PLAYER_LEFT',
     PLAYER_UPDATED: 'PLAYER_UPDATED',
+    PLAYER_CONNECTION: 'PLAYER_CONNECTION',
 };
 
 module.exports = {
@@ -35,6 +39,7 @@ module.exports = {
             playerJoined(gameId: ID!): PlayerJoinedPayload
             playerLeft(gameId: ID!, currentPlayerId: ID!): PlayerLeftPayload
             playerUpdated(gameId: ID!, currentPlayerId: ID!): PlayerUpdatedPayload!
+            playerConnection(gameId: ID!): PlayerConnectionPayload!
         }
 
         type PlayerLeftPayload {
@@ -54,6 +59,12 @@ module.exports = {
             player: Player!
         }
 
+        type PlayerConnectionPayload {
+            gameIds: [ID]!
+            userId: ID!
+            isConnected: Boolean!
+        }
+
         type PlayerUpdateResponse {
             success: Boolean!
             message: String
@@ -63,6 +74,7 @@ module.exports = {
         enum PlayerStatus {
             WAITING
             READY
+            DISCONNECTED
         }
     `,
     resolvers: {
@@ -73,9 +85,9 @@ module.exports = {
 
                 return {
                     success: !!player,
-                    player
+                    player,
                 };
-            }
+            },
         },
         Subscription: {
             playerJoined: {
@@ -83,23 +95,32 @@ module.exports = {
                 subscribe: withFilter(
                     () => pubsub.asyncIterator(events.PLAYER_JOINED),
                     (payload, variables) => matchId(payload.playerJoined.gameId, variables.gameId)
-                )
+                ),
             },
             playerLeft: {
                 subscribe: withFilter(
                     () => pubsub.asyncIterator(events.PLAYER_LEFT),
-                    (payload, variables) => matchId(payload.playerLeft.gameId, variables.gameId) &&
+                    (payload, variables) =>
+                        matchId(payload.playerLeft.gameId, variables.gameId) &&
                         !matchId(payload.playerLeft.playerId, variables.currentPlayerId)
-                )
+                ),
             },
             playerUpdated: {
                 // subscribe only to matching game id
                 subscribe: withFilter(
                     () => pubsub.asyncIterator(events.PLAYER_UPDATED),
-                    (payload, variables) => matchId(payload.playerUpdated.gameId, variables.gameId) &&
+                    (payload, variables) =>
+                        matchId(payload.playerUpdated.gameId, variables.gameId) &&
                         !matchId(payload.playerUpdated.player.id, variables.currentPlayerId)
-                )
-            }
-        }
-    }
+                ),
+            },
+            playerConnection: {
+                subscribe: withFilter(
+                    () => pubsub.asyncIterator(events.PLAYER_CONNECTION),
+                    (payload, variables) =>
+                        containsId(payload.playerConnection.gameIds, variables.gameId)
+                ),
+            },
+        },
+    },
 };

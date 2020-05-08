@@ -13,7 +13,7 @@ import { GAME_DATA, USER_DATA } from '../common/fragments';
 
 const GET_CURRENT_USER = gql`
     query me {
-        me @client {
+        me {
             ...UserData
         }
     }
@@ -49,8 +49,8 @@ const Game = () => {
         fetchPolicy: 'network-only',
     });
     const {
-        data: { me },
-    } = useQuery(GET_CURRENT_USER);
+        data: meData,
+    } = useQuery(GET_CURRENT_USER, { fetchPolicy: 'network-only' });
     const [startCrewGame] = useMutation(START_CREW_GAME, {
         variables: { gameId: get(gameData, 'game.id') },
     });
@@ -65,10 +65,12 @@ const Game = () => {
         subscribeToMore(gameSubscriptions.playerJoined(game.id));
         subscribeToMore(gameSubscriptions.playerLeft(game.id, playerId));
         subscribeToMore(gameSubscriptions.playerUpdated(game.id, playerId));
+        subscribeToMore(gameSubscriptions.playerConnection(game.id));
         subscribeToMore(gameSubscriptions.crewGameStarted(game.id));
         subscribeToMore(gameSubscriptions.taskAssigned(game.id));
         subscribeToMore(gameSubscriptions.cardPlayed(game.id));
     };
+    const me = get(meData, 'me') || {};
     const player = game.players.find((p) => p.userId === me.id);
 
     const setPlayerId = (playerId) => setPlayerIdDebug(playerId);

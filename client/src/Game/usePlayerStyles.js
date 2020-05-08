@@ -1,3 +1,4 @@
+import grey from '@material-ui/core/colors/grey';
 import { makeStyles } from '@material-ui/core/styles';
 
 const usePlayerStyles = makeStyles(_ => ({
@@ -31,6 +32,9 @@ const usePlayerStyles = makeStyles(_ => ({
     },
     note: {
         flex: '0 0 50%',
+    },
+    disconnected: {
+        color: grey[500],
     },
 }));
 

@@ -8,5 +8,6 @@ module.exports = {
 
         return code;
     },
-    matchId: (a, b) => parseInt(a, 10) === parseInt(b, 10)
+    matchId: (a, b) => parseInt(a, 10) === parseInt(b, 10),
+    containsId: (arr, id) => arr.some((el) => parseInt(el, 10) === parseInt(id, 10))
 };
